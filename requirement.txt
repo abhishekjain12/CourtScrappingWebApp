@@ -1,0 +1,5 @@
+PyMySQL
+python-slugify
+requests
+beautifulsoup4
+pdfminer.six

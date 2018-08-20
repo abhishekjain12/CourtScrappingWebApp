@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>Court Data Scrapping App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/materialize.css') }}" type="text/css">
+
+    <script src="{{ url_for('static',filename='javascript/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='javascript/materialize.min.js') }}"></script>
+    <script src="{{ url_for('static',filename='javascript/index.js') }}"></script>
+
+</head>
+<body>
+
+   <nav class="nav-extended">
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo" style="margin-left: 1rem">Court Data Scrapping App</a>
+    </div>
+    <div class="nav-content">
+      <ul class="tabs tabs-transparent tabs-fixed-width">
+        <li class="tab"><a class="active" href="#scrap">Scrap Data</a></li>
+        <li class="tab"><a href="#data">Retrieve Data</a></li>
+        <li class="tab"><a href="#history">History</a></li>
+      </ul>
+    </div>
+   </nav>
+
+   <div id="scrap" class="col s12">
+        <div class="container">
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <div class="row"></div>
+                        <div class="row">
+                          <div class="input-field col s12 m8">
+                            <select id="court-name-s">
+                              <option value="" disabled selected>Choose Court</option>
+                              {% for table in tables %}
+                                  {% if table['Tables_in_Courts_Data'] == "Tracker" %}
+                                  {% elif table['Tables_in_Courts_Data'] == "Tracker_JSON" %}
+                                  {% elif table['Tables_in_Courts_Data'] == "Tracker_History" %}
+                                  {% else %}
+                                    <option value="{{ table['Tables_in_Courts_Data'] }}">{{ table['Tables_in_Courts_Data'] | replace('_', " ") }}</option>
+                                  {% endif %}
+                              {% endfor %}
+                            </select>
+                            <label>Court Name</label>
+                          </div>
+                          <div class="input-field col s12 m4">
+                            <select id="bench-s">
+                              <option value="" disabled selected>Choose Bench</option>
+                            </select>
+                            <label>Bench</label>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12 m6 l6">
+                                <input id="start-date-s" type="text" class="datepicker">
+                                <label>Start Date</label>
+                            </div>
+                            <div class="input-field col s12 m6 l6">
+                                <input id="end-date-s" type="text" class="datepicker">
+                                <label>End Date</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12 center-align">
+                                <a id="submit-btn-s" class="waves-effect waves-light btn-large">
+                                    <i id="btn-send-s" class="material-icons right">send</i>
+                                    <i id="btn-loading-s" class="material-icons right" style="display:none;">&#xE5D5;</i>
+                                    Submit
+                                </a>
+                                <a id="cancel-btn-s" class="waves-effect waves-light btn-large red d-none">
+                                    <i id="btn-close-s" class="material-icons right">close</i>
+                                    <i id="btn-close-loading-s" class="material-icons right" style="display:none;">&#xE5D5;</i>
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+             </div>
+
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Current Request</span>
+
+                        <div class="row">
+                          <table class="striped responsive-table">
+                            <thead>
+                              <tr>
+                                  <th>Court Name</th>
+                                  <th>Bench</th>
+                                  <th>Start Date</th>
+                                  <th>End Date</th>
+                                  <th># cases</th>
+                                  <th># Error</th>
+                                  <th>Error yearly</th>
+                                  <th># year no data found</th>
+                                  <th>Status</th>
+                              </tr>
+                            </thead>
+
+                            <tbody id="current-s">
+                                <tr><td colspan="9"><h6 class='center-align grey-text text-darken-2'>No Process Running</h6></td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                    </div>
+                  </div>
+                </div>
+             </div>
+
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Tracker Table</span>
+
+                        <div class="row">
+                          <table class="striped responsive-table">
+                            <thead>
+                              <tr>
+                                  <th>Court Name</th>
+                                  <th>Bench</th>
+                                  <th>Start Date</th>
+                                  <th>End Date</th>
+                                  <th># cases</th>
+                                  <th># Error</th>
+                                  <th># Error yearly</th>
+                                  <th># year no data found</th>
+                                  <th>Status</th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for t_data in tracker_data %}
+                              <tr>
+                                <td>{{ t_data['Name'] | replace('_', " ") }}</td>
+                                <td>{{ t_data['bench'] | replace('_', " ") }}</td>
+                                <td>{{ t_data['Start_Date'] }}</td>
+                                <td>{{ t_data['End_Date'] }}</td>
+                                <td>{{ t_data['No_Cases'] }}</td>
+                                <td>{{ t_data['No_Error'] }}</td>
+                                <td>{{ t_data['No_Year_Error'] }}</td>
+                                <td>{{ t_data['No_Year_NoData'] }}</td>
+                                <td>{{ t_data['status'] }}</td>
+                              </tr>
+                            {% endfor %}
+                            </tbody>
+                          </table>
+                        </div>
+
+                    </div>
+                  </div>
+                </div>
+             </div>
+        </div>
+   </div>
+
+   <div id="data" class="col s12">
+        <div class="container">
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <div class="row"></div>
+                        <div class="row">
+                          <div class="input-field col s12 m9 l9">
+                            <select id="court-name-j">
+                              <option value="" disabled selected>Choose Court</option>
+                              {% for table in tables %}
+                                  {% if table['Tables_in_Courts_Data'] == "Tracker" %}
+                                  {% elif table['Tables_in_Courts_Data'] == "Tracker_JSON" %}
+                                  {% elif table['Tables_in_Courts_Data'] == "Tracker_History" %}
+                                  {% else %}
+                                    <option value="{{ table['Tables_in_Courts_Data'] }}">{{ table['Tables_in_Courts_Data'] | replace('_', " ") }}</option>
+                                  {% endif %}
+                              {% endfor %}
+                            </select>
+                            <label>Court Name</label>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12 m6 l6">
+                                <input id="start-date-j" type="text" class="datepicker">
+                                <label>Start Date</label>
+                            </div>
+                            <div class="input-field col s12 m6 l6">
+                                <input id="end-date-j" type="text" class="datepicker">
+                                <label>End Date</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-field col s12 center-align">
+                                <a id="submit-btn-j" class="waves-effect waves-light btn-large">
+                                    <i id="btn-send-j" class="material-icons right">send</i>
+                                    <i id="btn-loading-j" class="material-icons right" style="display:none;">&#xE5D5;</i>
+                                    Submit
+                                </a>
+                                <a id="cancel-btn-j" class="waves-effect waves-light btn-large red d-none">
+                                    <i id="btn-close-j" class="material-icons right">close</i>
+                                    <i id="btn-close-loading-j" class="material-icons right" style="display:none;">&#xE5D5;</i>
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+             </div>
+
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Current Request</span>
+
+                        <div class="row">
+                          <table class="striped responsive-table">
+                            <thead>
+                              <tr>
+                                  <th>Court Name</th>
+                                  <th>Start Date</th>
+                                  <th>End Date</th>
+                                  <th># Files</th>
+                                  <th>Status</th>
+                              </tr>
+                            </thead>
+
+                            <tbody id="current-j">
+                                <tr><td colspan="5"><h6 class='center-align grey-text text-darken-2'>No Process Running</h6></td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                    </div>
+                  </div>
+                </div>
+             </div>
+
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Files</span>
+
+                        <div class="row">
+                          <table class="striped responsive-table">
+                            <thead>
+                              <tr>
+                                  <th>Name</th>
+                                  <th>Download</th>
+                              </tr>
+                            </thead>
+
+                            <tbody id="files-j">
+                                <tr><td colspan="2"><h6 class='center-align grey-text text-darken-2'>No File</h6></td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                    </div>
+                  </div>
+                </div>
+             </div>
+        </div>
+   </div>
+
+   <div id="history" class="col s12">
+        <div class="container">
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">Tracker History</span>
+                        <div class="row">
+                          <table class="striped responsive-table">
+                            <thead>
+                              <tr>
+                                  <th>Court Name</th>
+                                  <th>Bench</th>
+                                  <th>Start Date</th>
+                                  <th>End Date</th>
+                                  <th># cases</th>
+                                  <th># Error</th>
+                                  <th># Error yearly</th>
+                                  <th># year no data found</th>
+                                  <th>Status</th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for t_data in tracker_history %}
+                              <tr>
+                                <td>{{ t_data['Name'] | replace('_', " ") }}</td>
+                                <td>{{ t_data['bench'] | replace('_', " ") }}</td>
+                                <td>{{ t_data['Start_Date'] }}</td>
+                                <td>{{ t_data['End_Date'] }}</td>
+                                <td>{{ t_data['No_Cases'] }}</td>
+                                <td>{{ t_data['No_Error'] }}</td>
+                                <td>{{ t_data['No_Year_Error'] }}</td>
+                                <td>{{ t_data['No_Year_NoData'] }}</td>
+                                <td>{{ t_data['status'] }}</td>
+                              </tr>
+                            {% endfor %}
+                            </tbody>
+                          </table>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+             </div>
+        </div>
+   </div>
+
+</body>
+</html>
