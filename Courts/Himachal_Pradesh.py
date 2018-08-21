@@ -6,7 +6,6 @@ from math import ceil
 import requests
 import traceback
 import logging
-import shutil
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -18,23 +17,14 @@ from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
 from Utils import logs
-from Utils.db import insert_query, update_query
+from Utils.db import insert_query, update_query, select_one_query, update_history_tracker, select_count_query
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
-logs.initialize_logger("HCS")
-
-court_name = "hp"
 base_url = "http://164.100.138.228/casest/cis/"
 
-headers = {
-    'Content-Type': "application/x-www-form-urlencoded",
-    'Cookie': "PHPSESSID=32vi4meb8as03gul6l2l6usfa4",
-    'Cache-Control': "no-cache"
-    }
 
-
-def request_pdf(url, case_id):
+def request_pdf(url, case_id, court_name):
     try:
         response = requests.request("GET", url, proxies=proxy_dict)
         if response.status_code == 200:
@@ -44,7 +34,7 @@ def request_pdf(url, case_id):
                 logging.error("No data for: " + str(case_id))
                 return "NULL"
 
-            file_path = module_directory + "/../PDF_Files/HCS_" + str(court_name) + "_" + str(slugify(case_id)) + ".pdf"
+            file_path = module_directory + "/../Data_Files/PDF_Files/" + court_name + "_" + slugify(case_id) + ".pdf"
             fw = open(file_path, "wb")
             fw.write(response.content)
 
@@ -58,8 +48,7 @@ def request_pdf(url, case_id):
                 interpreter.process_page(page)
                 text_data = string_io.getvalue()
 
-            file_path = module_directory + "/../Text_Files/HCS_" + str(court_name) + \
-                        "_" + str(slugify(case_id)) + ".txt"
+            file_path = module_directory + "/../Data_Files/Text_Files/" + court_name + "_" + slugify(case_id) + ".txt"
             fw = open(file_path, "w")
             fw.write(str(text_data))
 
@@ -73,7 +62,7 @@ def request_pdf(url, case_id):
         return "NULL"
 
 
-def parse_html(html_str):
+def parse_html(html_str, court_name):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         table_tag = soup.find_all('table')[1]
@@ -83,6 +72,12 @@ def parse_html(html_str):
 
         tr_count = 0
         for tr in tr_list:
+
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit is not None:
+                if emergency_exit['emergency_exit'] == 1:
+                    break
+
             tr_count += 1
             if tr_count <= 2 or tr_count > 17:
                 continue
@@ -94,6 +89,7 @@ def parse_html(html_str):
             status = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
+            insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -104,45 +100,49 @@ def parse_html(html_str):
                 if i == 1:
                     case_no = escape_string(str(td.decode_contents()))
 
-                if i == 2:
-                    coram = escape_string(str(td.decode_contents()))
+                if select_count_query(str(court_name), str(case_no)):
+                    insert_check = True
 
-                if i == 3:
-                    judgment_date = escape_string(str(td.decode_contents()))
+                    if i == 2:
+                        coram = escape_string(str(td.decode_contents()))
 
-                if i == 5:
-                    type_ = escape_string(str(td.decode_contents()))
+                    if i == 3:
+                        judgment_date = escape_string(str(td.decode_contents()))
 
-                if i == 6:
-                    status = escape_string(str(td.decode_contents()))
+                    if i == 5:
+                        type_ = escape_string(str(td.decode_contents()))
 
-                if i == 4:
-                    a_tag = BeautifulSoup(str(td), "html.parser").a
-                    pdf_file = escape_string(base_url + a_tag.get('href'))
-                    pdf_data = escape_string(request_pdf(base_url + a_tag.get('href'), case_no))
+                    if i == 6:
+                        status = escape_string(str(td.decode_contents()))
 
-            sql_query = "INSERT INTO " + str(court_name) + "_HC (case_no, judgment_date, coram, type, status, " \
-                                                           "pdf_data, pdf_file) VALUE ('" + case_no + "', '" + \
-                        judgment_date + "', '" + coram + "', '" + type_ + "', '" + status + "', '" + pdf_data + \
-                        "', '" + pdf_file + "')"
-            insert_query(sql_query)
+                    if i == 4:
+                        a_tag = BeautifulSoup(str(td), "html.parser").a
+                        pdf_file = escape_string(base_url + a_tag.get('href'))
+                        pdf_data = escape_string(request_pdf(base_url + a_tag.get('href'), case_no, court_name))
 
-            sql_query = "UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'"
-            update_query(sql_query)
+            if case_no != "NULL" and insert_check and case_no.find("DISCLAIMER") == -1:
+
+                sql_query = "INSERT INTO " + str(court_name) + " (case_no, judgment_date, coram, type, status, " \
+                                                               "pdf_file) VALUE ('" + case_no + "', '" + \
+                            judgment_date + "', '" + coram + "', '" + type_ + "', '" + status + "', '" + pdf_file + "')"
+                insert_query(sql_query)
+
+                update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
+                             str(case_no) + "'")
+                update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
 
     except Exception as e:
         logging.error("Failed to parse the html: %s", e)
-        sql_query = "UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
 
 
-def offset_link(html_str, o_payload, start_date):
+def offset_link(html_str, o_payload, court_name, headers):
     url = base_url + "coram-reported-judgment.php"
     try:
-        if not parse_html(html_str):
+        if not parse_html(html_str, court_name):
             return False
 
         soup = BeautifulSoup(html_str, "html.parser")
@@ -156,15 +156,15 @@ def offset_link(html_str, o_payload, start_date):
         for page_link in range(0, total_calls):
             next_num += 15
 
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit['emergency_exit'] == 1:
+                break
+
             payload = o_payload + "&start=" + str(next_num)
             response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict)
             res = response.text
 
-            fw = open(module_directory + "/../Html_Files/HCS_" + str(court_name) + "_offset_" +
-                      str(start_date).replace("/", "-") + "_" + str(next_num) + ".html", "w")
-            fw.write(str(res))
-
-            if not parse_html(res):
+            if not parse_html(res, court_name):
                 logging.error("Failed for url: " + str(next_num))
                 return False
 
@@ -174,26 +174,29 @@ def offset_link(html_str, o_payload, start_date):
         return False
 
 
-def request_data():
-    start_date = None
+def request_data(court_name, headers, start_date, end_date_):
     try:
         url = base_url + "coram-reported-judgment.php"
-        start_date = "01-01-1950"
 
         i = 0
         while True:
             i += 1
+
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit['emergency_exit'] == 1:
+                update_history_tracker(court_name)
+                return True
+
             end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=1)
                         ).strftime("%d-%m-%Y")
 
-            if datetime.datetime.strptime("31-08-2018", "%d-%m-%Y") < \
+            if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=1) < \
                     datetime.datetime.strptime(str(end_date), "%d-%m-%Y"):
                 logging.error("DONE")
                 break
 
-            sql_query = "UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" + str(end_date) + \
-                        "' WHERE Name = '" + str(court_name) + "'"
-            update_query(sql_query)
+            update_query("UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" + str(end_date) +
+                         "' WHERE Name = '" + str(court_name) + "'")
 
             payload = "coram=0" \
                       "&ojtype=1" \
@@ -204,47 +207,46 @@ def request_data():
                       "&coramqueryreported=0"
 
             response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict)
-
             res = response.text
-            # print(res)
 
             if "NO ROWS" in res.upper():
                 logging.error("NO data Found for start date: " + str(start_date))
-
-                sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
-                            str(court_name) + "'"
-                update_query(sql_query)
+                update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                             str(court_name) + "'")
 
                 start_date = end_date
                 continue
 
-            fw = open(module_directory + "/../Html_Files/HCS_" + str(court_name) + "_" +
-                      str(start_date).replace("/", "-") + "_" + str(i) + ".html", "w")
-            fw.write(str(res))
-
-            if not offset_link(res, payload, start_date):
+            if not offset_link(res, payload, court_name, headers):
                 logging.error("Failed to parse data from date: " + str(start_date))
 
             start_date = end_date
 
-        shutil.make_archive(str(court_name) + "_HTML_FILES", 'zip', module_directory + "/../Html_Files")
-        shutil.make_archive(str(court_name) + "_TEXT_FILES", 'zip', module_directory + "/../Text_Files")
+        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        sql_query = "UPDATE Tracker SET status = 'IN_SUCCESS' WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
-
-        return "IN_SUCCESS"
+        return True
 
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
 
-        sql_query = "UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" + \
-                    str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        return "IN_FAILED"
+        return False
 
 
-print(request_data())
+def main(court_name, start_date, end_date):
+    logs.initialize_logger("HIMACHAL")
+    r = requests.request('GET', base_url + 'coram-reported-query.php', proxies=proxy_dict)
+
+    headers = {
+        'Content-Type': "application/x-www-form-urlencoded",
+        'Cookie': 'PHPSESSID=' + str(requests.utils.dict_from_cookiejar(r.cookies)['PHPSESSID']),
+        'Cache-Control': "no-cache",
+    }
+    return request_data(court_name, headers, start_date, end_date)

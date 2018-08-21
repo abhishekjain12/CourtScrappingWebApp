@@ -1,7 +1,3 @@
-import requests
-
-res = requests.request('GET', 'http://hcmjudgment.man.nic.in')
-for cookie in res.cookies:
-    print(cookie.__dict__['name'])
-    print(cookie.__dict__['value'])
-    print(cookie)
+# fw = open(module_directory + "/../Data_Files/Html_Files/" + court_name + "_" +
+#           str(start_date).replace("/", "-") + "_" + str(i) + ".html", "w")
+# fw.write(str(res))

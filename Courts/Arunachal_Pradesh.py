@@ -4,29 +4,36 @@ import re
 import requests
 import traceback
 import logging
-import shutil
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from io import StringIO
-
+from datetime import datetime
 from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
+
 from Utils import logs
-from Utils.db import insert_query, update_query
+from Utils.db import insert_query, update_query, select_one_query, update_history_tracker, select_count_query
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
-logs.initialize_logger("HCS")
-
-court_name = "Arunachal"
 base_url = "http://ghcitanagar.gov.in/GHCITA/"
 
 
-def request_pdf(url, case_id):
+def month_list_(dates):
+    start, end = [datetime.strptime(_, "%b%y") for _ in dates]
+    total_months = lambda dt: dt.month + 12 * dt.year
+    m_list = []
+    for tot_m in range(total_months(start) - 1, total_months(end)):
+        y, m = divmod(tot_m, 12)
+        m_list.append(datetime(y, m + 1, 1).strftime("%b%y").lower())
+    return m_list
+
+
+def request_pdf(url, case_id, court_name):
     try:
         response = requests.request("GET", url, proxies=proxy_dict)
         if response.status_code == 200:
@@ -36,7 +43,7 @@ def request_pdf(url, case_id):
                 logging.error("No data for: " + str(case_id))
                 return "NULL"
 
-            file_path = module_directory + "/../PDF_Files/HCS_" + str(court_name) + "_" + str(slugify(case_id)) + ".pdf"
+            file_path = module_directory + "/../Data_Files/PDF_Files/" + court_name + "_" + slugify(case_id) + ".pdf"
             fw = open(file_path, "wb")
             fw.write(response.content)
 
@@ -50,8 +57,7 @@ def request_pdf(url, case_id):
                 interpreter.process_page(page)
                 text_data = string_io.getvalue()
 
-            file_path = module_directory + "/../Text_Files/HCS_" + str(court_name) + \
-                        "_" + str(slugify(case_id)) + ".txt"
+            file_path = module_directory + "/../Data_Files/Text_Files/" + court_name + "_" + slugify(case_id) + ".txt"
             fw = open(file_path, "w")
             fw.write(str(text_data))
 
@@ -65,7 +71,7 @@ def request_pdf(url, case_id):
         return "NULL"
 
 
-def parse_html(html_str, month, year):
+def parse_html(html_str, month_year, court_name):
     try:
         soup = BeautifulSoup(html_str.replace("</a>", ""), "html.parser")
         soup = BeautifulSoup(str(soup.prettify()), "html.parser")
@@ -76,6 +82,11 @@ def parse_html(html_str, month, year):
 
         tr_count = 0
         for tr in tr_list:
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit is not None:
+                if emergency_exit['emergency_exit'] == 1:
+                    break
+
             tr_count += 1
             if tr_count <= 5:
                 continue
@@ -88,6 +99,7 @@ def parse_html(html_str, month, year):
             subject = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
+            insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td', {'colspan': None})
@@ -97,13 +109,17 @@ def parse_html(html_str, month, year):
                 i += 1
                 if i == 1:
                     judgment_day = escape_string(str(td.decode_contents()))
-                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + "/" + str(month) + "/" + str(year)
+                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + "/" + str(month_year[:-2]) + "/" + \
+                                    str(month_year[-2:])
 
                 if i == 2:
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     pdf_file = escape_string(str(base_url + a_tag.get('href')))
                     case_no = escape_string(str(a_tag.text).replace("\n", ""))
-                    pdf_data = escape_string(request_pdf(pdf_file, case_no))
+
+                    if select_count_query(str(court_name), str(case_no)):
+                        insert_check = True
+                        pdf_data = escape_string(request_pdf(pdf_file, case_no, court_name))
 
                 if i == 3:
                     party = str(td.decode_contents()).split("<br/>")
@@ -120,83 +136,88 @@ def parse_html(html_str, month, year):
                     else:
                         judge_name = escape_string(str(td.decode_contents()))
 
-            if td_list:
-                sql_query = "INSERT INTO " + str(court_name) + "_HC (case_no, petitioner, respondent, judgment_date, " \
-                                                               "judge_name, subject, pdf_data, pdf_file) VALUE ('" + \
+            if case_no != "NULL" and insert_check and td_list:
+                sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
+                                                               "judge_name, subject, pdf_file) VALUE ('" + \
                             case_no + "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + \
-                            judge_name + "', '" + subject + "', '" + pdf_data + "', '" + pdf_file + "')"
+                            judge_name + "', '" + subject + "', '" + pdf_file + "')"
                 insert_query(sql_query)
 
-                sql_query = "UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'"
-                update_query(sql_query)
+                update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
+                             str(case_no) + "'")
+                update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
 
     except Exception as e:
+        traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
-        sql_query = "UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
 
 
-def request_data():
+def request_data(court_name, start_date, end_date_):
     try:
-        year_list = ['08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18']
-        month_list = ['jan', 'feb', 'mar', 'april', 'may', 'jun', 'jul', 'aug', 'sept', 'oct', 'nov', 'dec']
-
         headers = {
             'Cache-Control': "no-cache",
         }
 
-        i = 0
-        for year in year_list:
-            for month in month_list:
-                i += 1
+        if int(start_date[-2:]) < 8:
+            update_query("UPDATE Tracker SET status = 'IN_NO_DATA_FOUND', emergency_exit=true WHERE Name = '" +
+                         str(court_name) + "'")
+            if int(end_date_[-2:]) < 8:
+                update_history_tracker(court_name)
+                return True
 
-                url = base_url + "ghci_" + str(month) + str(year) + ".html"
+        for month_year in month_list_([str(start_date), str(end_date_)]):
+            if str(month_year[:-2]) == 'apr':
+                month_year = 'april' + str(month_year[-2:])
+            if str(month_year[:-2]) == 'sep':
+                month_year = 'sept' + str(month_year[-2:])
 
-                sql_query = "UPDATE Tracker SET Start_Date = '" + str(year) + "', End_Date = '" + str(year) + \
-                            "' WHERE Name = '" + str(court_name) + "'"
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit['emergency_exit'] == 1:
+                update_history_tracker(court_name)
+                return True
+
+            url = base_url + "ghci_" + str(month_year) + ".html"
+
+            update_query("UPDATE Tracker SET Start_Date = '" + str(month_year) + "', End_Date = '" + str(end_date_) +
+                         "' WHERE Name = '" + str(court_name) + "'")
+
+            response = requests.request("GET", url, headers=headers, proxies=proxy_dict)
+            res = response.text
+
+            if "NO ROWS" in res.upper():
+                logging.error("NO data Found for start date: " + str(month_year))
+
+                sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
+                            str(court_name) + "'"
                 update_query(sql_query)
 
-                response = requests.request("GET", url, headers=headers, proxies=proxy_dict)
+                continue
 
-                res = response.text
-                # print(res)
+            if not parse_html(res, month_year, court_name):
+                logging.error("Failed to parse data from date: " + str(month_year))
 
-                if "NO ROWS" in res.upper():
-                    logging.error("NO data Found for start date: " + str(month) + str(year))
+        update_query("UPDATE Tracker SET Start_Date = '" + str(start_date) +
+                     "', status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" + str(court_name) + "'")
+        update_history_tracker(court_name)
 
-                    sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
-                                str(court_name) + "'"
-                    update_query(sql_query)
-
-                    continue
-
-                fw = open(module_directory + "/../Html_Files/HCS_" + str(court_name) + "_" +
-                          str(month) + str(year) + "_" + str(i) + ".html", "w")
-                fw.write(str(res))
-
-                if not parse_html(res, i, year):
-                    logging.error("Failed to parse data from date: " + str(month) + str(year))
-
-        shutil.make_archive(str(court_name) + "_HTML_FILES", 'zip', module_directory + "/../Html_Files")
-        shutil.make_archive(str(court_name) + "_TEXT_FILES", 'zip', module_directory + "/../Text_Files")
-
-        sql_query = "UPDATE Tracker SET status = 'IN_SUCCESS' WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
-
-        return "IN_SUCCESS"
+        return True
 
     except Exception as e:
         traceback.print_exc()
+        logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
 
-        sql_query = "UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" + \
-                    str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        return "IN_FAILED"
+        return False
 
 
-print(request_data())
+def main(court_name, start_date, end_date):
+    logs.initialize_logger("ARUNACHAL")
+    return request_data(court_name, start_date, end_date)

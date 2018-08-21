@@ -17,9 +17,13 @@ def index():
     tracker_data = select_query("SELECT Name, bench, Start_Date, End_Date, No_Cases, No_Error, No_Year_Error, "
                                 "No_Year_NoData, status FROM Tracker")
     tracker_history = select_query("SELECT Name, bench, Start_Date, End_Date, No_Cases, No_Error, No_Year_Error, "
-                                   "No_Year_NoData, status FROM Tracker_History")
+                                   "No_Year_NoData, status FROM Tracker_History ORDER BY id DESC")
+    tracker_json_history = select_query("SELECT Name, Start_Date, End_Date, No_Files, status FROM Tracker_History_JSON"
+                                        " ORDER BY id DESC")
+
     tables = select_query("SHOW TABLES")
-    return render_template("index.html", tracker_data=tracker_data, tables=tables, tracker_history=tracker_history)
+    return render_template("index.html", tracker_data=tracker_data, tables=tables, tracker_history=tracker_history,
+                           tracker_json_history=tracker_json_history)
 
 
 @app.route('/get-bench-list/<string:court_name>')

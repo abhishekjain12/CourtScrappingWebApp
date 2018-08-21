@@ -5,7 +5,6 @@ from math import ceil
 import requests
 import traceback
 import logging
-import shutil
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -17,21 +16,18 @@ from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
 from Utils import logs
-from Utils.db import insert_query, update_query
-
+from Utils.db import insert_query, update_query, update_history_tracker, select_one_query, select_count_query
+from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
-logs.initialize_logger("HCS")
 
-court_name = "karnataka"
 base_url = "http://judgmenthck.kar.nic.in"
-
 headers = {
     'Cache-Control': "no-cache"
     }
 
 
-def request_pdf(url, case_id):
+def request_pdf(url, case_id, court_name):
     try:
         response = requests.request("GET", url, proxies=proxy_dict)
         if response.status_code == 200:
@@ -41,7 +37,7 @@ def request_pdf(url, case_id):
                 logging.error("No data for: " + str(case_id))
                 return "NULL"
 
-            file_path = module_directory + "/../PDF_Files/HCS_" + str(court_name) + "_" + str(slugify(case_id)) + ".pdf"
+            file_path = module_directory + "/../Data_Files/PDF_Files/" + court_name + "_" + slugify(case_id) + ".pdf"
             fw = open(file_path, "wb")
             fw.write(response.content)
 
@@ -55,8 +51,7 @@ def request_pdf(url, case_id):
                 interpreter.process_page(page)
                 text_data = string_io.getvalue()
 
-            file_path = module_directory + "/../Text_Files/HCS_" + str(court_name) + \
-                        "_" + str(slugify(case_id)) + ".txt"
+            file_path = module_directory + "/../Data_Files/Text_Files/" + court_name + "_" + slugify(case_id) + ".txt"
             fw = open(file_path, "w")
             fw.write(str(text_data))
 
@@ -70,7 +65,7 @@ def request_pdf(url, case_id):
         return "NULL"
 
 
-def parse_html(html_str):
+def parse_html(html_str, court_name):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         table_tag = soup.find_all('table', {'class': 'miscTable'})[0]
@@ -80,6 +75,12 @@ def parse_html(html_str):
 
         tr_count = 0
         for tr in tr_list:
+
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit is not None:
+                if emergency_exit['emergency_exit'] == 1:
+                    break
+
             tr_count += 1
             if tr_count == 1:
                 continue
@@ -92,6 +93,7 @@ def parse_html(html_str):
             bench = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
+            insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -107,15 +109,18 @@ def parse_html(html_str):
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     case_no = escape_string(str(a_tag.text).replace("\n", ""))
 
-                    new_url = base_url + a_tag.get('href')
-                    response = requests.request('GET', new_url, headers=headers, proxies=proxy_dict)
+                    if select_count_query(str(court_name), str(case_no)):
+                        insert_check = True
 
-                    new_soup = BeautifulSoup(str(response.text), "html.parser")
-                    new_td_tag = new_soup.find_all('td', {'headers': 't1'})[0]
-                    new_a_href = BeautifulSoup(str(new_td_tag), "html.parser").a.get('href')
+                        new_url = base_url + a_tag.get('href')
+                        response = requests.request('GET', new_url, headers=headers, proxies=proxy_dict)
 
-                    pdf_file = escape_string(base_url + new_a_href)
-                    pdf_data = escape_string(request_pdf(base_url + new_a_href, case_no))
+                        new_soup = BeautifulSoup(str(response.text), "html.parser")
+                        new_td_tag = new_soup.find_all('td', {'headers': 't1'})[0]
+                        new_a_href = BeautifulSoup(str(new_td_tag), "html.parser").a.get('href')
+
+                        pdf_file = escape_string(base_url + new_a_href)
+                        pdf_data = escape_string(request_pdf(base_url + new_a_href, case_no, court_name))
 
                 if i == 3:
                     judge_name = escape_string(str(td.text))
@@ -129,14 +134,16 @@ def parse_html(html_str):
                 if i == 6:
                     bench = escape_string(str(td.text))
 
-            sql_query = "INSERT INTO " + str(court_name) + "_HC (case_no, judgment_date, judge_name, petitioner, " \
-                                                           "respondent, bench, pdf_data, pdf_file) VALUE ('" + \
-                        case_no + "', '" + judgment_date + "', '" + judge_name + "', '" + petitioner + "', '" + \
-                        respondent + "', '" + bench + "', '" + pdf_data + "', '" + pdf_file + "')"
-            insert_query(sql_query)
+            if case_no != "NULL" and insert_check:
+                sql_query = "INSERT INTO " + str(court_name) + "(case_no, judgment_date, judge_name, petitioner, " \
+                                                               "respondent, bench, pdf_file) VALUE ('" + case_no + \
+                            "', '" + judgment_date + "', '" + judge_name + "', '" + petitioner + "', '" + respondent + \
+                            "', '" + bench + "', '" + pdf_file + "')"
+                insert_query(sql_query)
 
-            sql_query = "UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'"
-            update_query(sql_query)
+                update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
+                             str(case_no) + "'")
+                update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
 
@@ -147,9 +154,9 @@ def parse_html(html_str):
         return False
 
 
-def offset_link(html_str, url, querystring):
+def offset_link(html_str, url, querystring, court_name):
     try:
-        if not parse_html(html_str):
+        if not parse_html(html_str, court_name):
             return False
 
         querystring['sort_by'] = "1"
@@ -165,15 +172,16 @@ def offset_link(html_str, url, querystring):
         for page_link in range(0, total_calls):
             next_num += 200
 
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit['emergency_exit'] == 1:
+                update_history_tracker(court_name)
+                return True
+
             querystring['offset'] = str(next_num)
             response = requests.request("GET", url, headers=headers, params=querystring, proxies=proxy_dict)
             res = response.text
 
-            fw = open(module_directory + "/../Html_Files/HCS_" + str(court_name) + "_offset_" +
-                      str(next_num) + ".html", "w")
-            fw.write(str(res))
-
-            if not parse_html(res):
+            if not parse_html(res, court_name):
                 logging.error("Failed for url: " + str(next_num))
                 return False
 
@@ -183,94 +191,96 @@ def offset_link(html_str, url, querystring):
         return False
 
 
-def request_data_old():
+def request_data_old(court_name, start_date, end_date):
     try:
         url = base_url + "/judgments/browse"
 
-        sql_query = "UPDATE Tracker SET Start_Date = '1999', End_Date = '2014' WHERE Name = '" + str(court_name) + "'"
+        sql_query = "UPDATE Tracker SET Start_Date = '" + start_date + "', End_Date = '" + end_date + \
+                    "' WHERE Name = '" + str(court_name) + "'"
         update_query(sql_query)
 
         querystring = {"type": "reported", "value": "Reportable", "sort_by": "1", "order": "ASC", "rpp": "357",
                        "etal": "0", "submit_browse": "Update"}
 
         response = requests.request("GET", url, headers=headers, params=querystring, proxies=proxy_dict)
-
         res = response.text
-        # print(res)
 
         if "NO ROWS" in res.upper():
             sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
                         str(court_name) + "'"
             update_query(sql_query)
 
-        fw = open(module_directory + "/../Html_Files/HCS_" + str(court_name) + "_1990" + ".html", "w")
-        fw.write(str(res))
-
-        if not parse_html(res):
+        if not parse_html(res, court_name):
             logging.error("Failed to parse data old")
 
-        shutil.make_archive(str(court_name) + "_HTML_FILES", 'zip', module_directory + "/../Html_Files")
-        shutil.make_archive(str(court_name) + "_TEXT_FILES", 'zip', module_directory + "/../Text_Files")
+        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        sql_query = "UPDATE Tracker SET status = 'IN_SUCCESS' WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
-
-        return "IN_SUCCESS"
+        return True
 
     except Exception as e:
         traceback.print_exc()
+        logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
 
-        sql_query = "UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" + \
-                    str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        return "IN_FAILED"
+        return False
 
 
-def request_data():
+def request_data(court_name, start_date, end_date_):
     try:
         url = base_url + "/judgmentsdsp/browse"
 
-        sql_query = "UPDATE Tracker SET Start_Date = '2014', End_Date = '2018' WHERE Name = '" + str(court_name) + "'"
+        sql_query = "UPDATE Tracker SET Start_Date = '" + start_date + "', End_Date = '" + end_date_ + \
+                    "' WHERE Name = '" + str(court_name) + "'"
         update_query(sql_query)
 
         querystring = {"type": "reportable", "order": "ASC", "rpp": "200", "value": "Reportable"}
 
         response = requests.request("GET", url, headers=headers, params=querystring, proxies=proxy_dict)
-
         res = response.text
-        # print(res)
 
         if "NO ROWS" in res.upper():
             sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
                         str(court_name) + "'"
             update_query(sql_query)
 
-        fw = open(module_directory + "/../Html_Files/HCS_" + str(court_name) + "_2014" + ".html", "w")
-        fw.write(str(res))
-
-        if not offset_link(res, url, querystring):
+        if not offset_link(res, url, querystring, court_name):
             logging.error("Failed to parse data")
 
-        shutil.make_archive(str(court_name) + "_HTML_FILES", 'zip', module_directory + "/../Html_Files")
-        shutil.make_archive(str(court_name) + "_TEXT_FILES", 'zip', module_directory + "/../Text_Files")
+        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        sql_query = "UPDATE Tracker SET status = 'IN_SUCCESS' WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
-
-        return "IN_SUCCESS"
+        return True
 
     except Exception as e:
         traceback.print_exc()
+        logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
 
-        sql_query = "UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" + \
-                    str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
+                     str(court_name) + "'")
+        update_history_tracker(court_name)
 
-        return "IN_FAILED"
+        return False
 
 
-# print(request_data_old())
-print(request_data())
+def main(court_name, start_date, end_date):
+    logs.initialize_logger("KARNATAKA")
+
+    if int(start_date) == 2014 or int(end_date) == 2014:
+        request_data(court_name, '2014', '2014')
+        request_data_old(court_name, '2014', '2014')
+
+    if int(start_date) < 2014 < int(end_date):
+        request_data_old(court_name, str(start_date), '2014')
+        return request_data(court_name, '2014', str(end_date))
+    elif int(start_date) > 2014:
+        return request_data(court_name, str(start_date), str(end_date))
+    elif int(end_date) < 2014:
+        return request_data_old(court_name, str(start_date), str(end_date))

@@ -18,7 +18,6 @@ from Utils.db import insert_query, update_query, select_count_query, update_hist
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
-logs.initialize_logger("Manipur")
 
 court_name = "Manipur"
 base_url = "http://hcmjudgment.man.nic.in"
@@ -127,8 +126,8 @@ def parse_html(html_str):
                         font_tag = BeautifulSoup(str(td), "html.parser").font
                         a_tag = BeautifulSoup(str(font_tag), "html.parser").a
                         pdf_file = escape_string(base_url + "/" + a_tag.get('href'))
-                        # pdf_data = escape_string(bytes(str(request_pdf(base_url + "/" + a_tag.get('href'), case_no)),
-                        #                                'utf-8').decode("utf-8", 'ignore'))
+                        pdf_data = escape_string(bytes(str(request_pdf(base_url + "/" + a_tag.get('href'), case_no)),
+                                                       'utf-8').decode("utf-8", 'ignore'))
 
             if case_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
@@ -146,8 +145,7 @@ def parse_html(html_str):
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
-        sql_query = "UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
+        update_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
 
 
@@ -213,9 +211,8 @@ def request_data(headers, start_date, end_date_):
                 logging.error("DONE")
                 break
 
-            sql_query = "UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" + str(end_date) + \
-                        "' WHERE Name = '" + str(court_name) + "'"
-            update_query(sql_query)
+            update_query("UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" + str(end_date) +
+                         "' WHERE Name = '" + str(court_name) + "'")
 
             payload = "date_day=" + str(start_date[0:2]).replace("0", "") + \
                       "&date_month=" + str(start_date[3:5]).replace("0", "") + \
@@ -230,10 +227,8 @@ def request_data(headers, start_date, end_date_):
 
             if "invalid inputs given" in res.lower():
                 logging.error("NO data Found for start date: " + str(start_date))
-
-                sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
-                            str(court_name) + "'"
-                update_query(sql_query)
+                update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                             str(court_name) + "'")
 
                 start_date = end_date
                 continue
@@ -262,7 +257,8 @@ def request_data(headers, start_date, end_date_):
 
 
 def main(start_date, end_date):
-    r = requests.request('GET', base_url, proxies=proxy_dict)
+    logs.initialize_logger("Manipur")
+    r = requests.request('GET', base_url + "/ByDate.php", proxies=proxy_dict)
 
     headers = {
         'Content-Type': "text/html",

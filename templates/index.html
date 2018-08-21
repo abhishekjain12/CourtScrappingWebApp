@@ -24,7 +24,8 @@
       <ul class="tabs tabs-transparent tabs-fixed-width">
         <li class="tab"><a class="active" href="#scrap">Scrap Data</a></li>
         <li class="tab"><a href="#data">Retrieve Data</a></li>
-        <li class="tab"><a href="#history">History</a></li>
+        <li class="tab"><a href="#history_scrap">History Scrap</a></li>
+        <li class="tab"><a href="#history_json">History JSON</a></li>
       </ul>
     </div>
    </nav>
@@ -280,13 +281,18 @@
         </div>
    </div>
 
-   <div id="history" class="col s12">
+   <div id="history_scrap" class="col s12">
         <div class="container">
              <div class="row">
                 <div class="col s12">
                   <div class="card">
                     <div class="card-content">
-                        <span class="card-title">Tracker History</span>
+                        <span class="card-title">
+                            Scraping Tracker History
+                            <a class="waves-effect waves-light btn right" onClick="window.location.reload()">
+                                <i class="material-icons right">refresh</i>refresh
+                            </a>
+                        </span>
                         <div class="row">
                           <table class="striped responsive-table">
                             <thead>
@@ -314,6 +320,50 @@
                                 <td>{{ t_data['No_Error'] }}</td>
                                 <td>{{ t_data['No_Year_Error'] }}</td>
                                 <td>{{ t_data['No_Year_NoData'] }}</td>
+                                <td>{{ t_data['status'] }}</td>
+                              </tr>
+                            {% endfor %}
+                            </tbody>
+                          </table>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+             </div>
+        </div>
+   </div>
+
+   <div id="history_json" class="col s12">
+        <div class="container">
+             <div class="row">
+                <div class="col s12">
+                  <div class="card">
+                    <div class="card-content">
+                        <span class="card-title">
+                            JSON Tracker History
+                            <a class="waves-effect waves-light btn right" onClick="window.location.reload()">
+                                <i class="material-icons right">refresh</i>refresh
+                            </a>
+                        </span>
+                        <div class="row">
+                          <table class="striped responsive-table">
+                            <thead>
+                              <tr>
+                                  <th>Court Name</th>
+                                  <th>Start Date</th>
+                                  <th>End Date</th>
+                                  <th># Files</th>
+                                  <th>Status</th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for t_data in tracker_json_history %}
+                              <tr>
+                                <td>{{ t_data['Name'] | replace('_', " ") }}</td>
+                                <td>{{ t_data['Start_Date'] }}</td>
+                                <td>{{ t_data['End_Date'] }}</td>
+                                <td>{{ t_data['No_Files'] }}</td>
                                 <td>{{ t_data['status'] }}</td>
                               </tr>
                             {% endfor %}

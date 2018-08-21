@@ -12,8 +12,7 @@ module_directory = os.path.dirname(__file__)
 def db_connect():
     return pymysql.connect(host="localhost",
                            user="root",
-                           # password="root",
-                           password="Future@4",
+                           password="krypton212",
                            db="Courts_Data",
                            # charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
@@ -75,6 +74,13 @@ def update_history_tracker(table_name):
                  "', '" + str(result['End_Date']) + "', " + str(result['No_Error']) + ", " +
                  str(result['No_Year_Error']) + ", " + str(result['No_Year_NoData']) + ", true, '" +
                  str(result['status']) + "')")
+
+
+def update_history_tracker_json(table_name):
+    result = select_one_query("SELECT * FROM Tracker_JSON WHERE Name='" + table_name + "' ORDER BY id LIMIT 1")
+    insert_query("INSERT INTO Tracker_History_JSON (Name, Start_Date, End_Date, No_Files, emergency_exit, "
+                 "status) VALUES ('" + str(result['Name']) + "', '" + str(result['Start_Date']) + "', '" +
+                 str(result['End_Date']) + "', " + str(result['No_Files']) + ", true, '" + str(result['status']) + "')")
 
 
 def select_query(query):
@@ -169,6 +175,7 @@ def select_json_query(table_name, start_date, end_date):
 
         update_query("UPDATE Tracker_JSON SET status='IN_SUCCESS', emergency_exit=true WHERE Name='" +
                      table_name + "'")
+        update_history_tracker_json(table_name)
         db.close()
 
         return True
