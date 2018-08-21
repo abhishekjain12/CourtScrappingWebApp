@@ -45,6 +45,7 @@
                                   {% if table['Tables_in_Courts_Data'] == "Tracker" %}
                                   {% elif table['Tables_in_Courts_Data'] == "Tracker_JSON" %}
                                   {% elif table['Tables_in_Courts_Data'] == "Tracker_History" %}
+                                  {% elif table['Tables_in_Courts_Data'] == "Tracker_History_JSON" %}
                                   {% else %}
                                     <option value="{{ table['Tables_in_Courts_Data'] }}">{{ table['Tables_in_Courts_Data'] | replace('_', " ") }}</option>
                                   {% endif %}
@@ -185,6 +186,7 @@
                                   {% if table['Tables_in_Courts_Data'] == "Tracker" %}
                                   {% elif table['Tables_in_Courts_Data'] == "Tracker_JSON" %}
                                   {% elif table['Tables_in_Courts_Data'] == "Tracker_History" %}
+                                  {% elif table['Tables_in_Courts_Data'] == "Tracker_History_JSON" %}
                                   {% else %}
                                     <option value="{{ table['Tables_in_Courts_Data'] }}">{{ table['Tables_in_Courts_Data'] | replace('_', " ") }}</option>
                                   {% endif %}
