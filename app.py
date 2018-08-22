@@ -22,8 +22,13 @@ def index():
                                         " ORDER BY id DESC LIMIT 100")
 
     tables = select_query("SHOW TABLES")
+
+    log_files = []
+    for file_ in glob.glob(module_directory + "/Utils/log_files/*.log"):
+        log_files.append(file_[file_.rfind("/") + 1:])
+
     return render_template("index.html", tracker_data=tracker_data, tables=tables, tracker_history=tracker_history,
-                           tracker_json_history=tracker_json_history)
+                           tracker_json_history=tracker_json_history, log_files=log_files)
 
 
 @app.route('/get-bench-list/<string:court_name>')
@@ -126,6 +131,11 @@ def get_json(court_name):
 @app.route('/files/<path:filename>')
 def files(filename):
     return send_from_directory(directory=module_directory + "/Data_Files/JSON_Files", filename=filename)
+
+
+@app.route('/logs/<path:filename>')
+def logs_file(filename):
+    return send_from_directory(directory=module_directory + "/Utils/log_files", filename=filename)
 
 
 @app.route('/UrcNL3M9m-hD/UrcNL3M9m-hD')
