@@ -442,10 +442,12 @@ function get_files(court_name) {
                     "No Process Running</h6></td></tr>";
             }
             else {
-                tr_list += "<tr>";
-                tr_list += "<td>" + data.Name + "</td>";
-                tr_list += "<td><a href='/files/" + data.Name + "' target='_blank' class='waves-effect waves-light btn green'>Download</a></td>";
-                tr_list += "</tr>";
+                for(let file_ in data.Name) {
+                    tr_list += "<tr>";
+                    tr_list += "<td>" + file_ + "</td>";
+                    tr_list += "<td><a href='/files/" + file_ + "' target='_blank' class='waves-effect waves-light btn green'>Download</a></td>";
+                    tr_list += "</tr>";
+                }
             }
             $("#files-j").html(tr_list);
             Materialize.toast('Files Ready for Download', 2000, 'light-green');
