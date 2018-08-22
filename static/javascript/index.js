@@ -8,7 +8,7 @@ $(document).ready(function() {
      $('.datepicker').pickadate({
         selectMonths: true,
         selectYears: 100,
-        min: new Date(1950,1,1),
+        min: new Date(1950, 0, 1),
         max: new Date(),
         format: 'dd/mm/yyyy',
         today: 'Today',
