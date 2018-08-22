@@ -442,10 +442,10 @@ function get_files(court_name) {
                     "No Process Running</h6></td></tr>";
             }
             else {
-                for(let file_ in data.Name) {
+                for(let i in data.Name) {
                     tr_list += "<tr>";
-                    tr_list += "<td>" + file_ + "</td>";
-                    tr_list += "<td><a href='/files/" + file_ + "' target='_blank' class='waves-effect waves-light btn green'>Download</a></td>";
+                    tr_list += "<td>" + data.Name[i] + "</td>";
+                    tr_list += "<td><a href='/files/" + data.Name[i] + "' target='_blank' class='waves-effect waves-light btn green'>Download</a></td>";
                     tr_list += "</tr>";
                 }
             }
