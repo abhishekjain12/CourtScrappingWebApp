@@ -64,10 +64,11 @@ def start_scrap():
 
     res = jsonify(court_controller(court_name, bench, start_date, end_date))
 
-    for filename in glob.glob(module_directory + "/Data_Files/PDF_Files/*.pdf"):
-        os.system("cp " + str(filename) + " " + str(module_directory + "/../bucket_dir/PDF_Files"))
-    for filename in glob.glob(module_directory + "/Data_Files/Text_Files/*.txt"):
-        os.system("cp " + str(filename) + " " + str(module_directory + "/../bucket_dir/PDF_Files"))
+    for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/*.pdf"):
+        shutil.copy(filename, "/home/karaa_krypt/bucket_dir/PDF_Files")
+    for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/*.txt"):
+        shutil.copy(filename, "/home/karaa_krypt/bucket_dir/Text_Files")
+
     return res
 
 
@@ -110,8 +111,8 @@ def start_json():
     update_query("UPDATE Tracker_JSON SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     if select_json_query(court_name, start_date, end_date):
 
-        for filename in glob.glob(module_directory + "/Data_Files/JSON_Files/*.json"):
-            os.system("cp " + str(filename) + " " + str(module_directory + "/../bucket_dir/JSON_Files"))
+        for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/JSON_Files/*.json"):
+            shutil.copy(filename, "/home/karaa_krypt/bucket_dir/JSON_Files")
 
         return '', 200
     else:
