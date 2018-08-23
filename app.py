@@ -1,6 +1,7 @@
 import datetime
 import glob
 import os
+import shutil
 
 from flask import Flask, render_template, jsonify, request, send_from_directory
 
@@ -50,11 +51,25 @@ def start_scrap():
     start_date = request.form['start_date']
     end_date = request.form['end_date']
 
+    for f in glob.glob(module_directory + "/Data_Files/PDF_Files/*.pdf"):
+        os.remove(f)
+
+    for f in glob.glob(module_directory + "/Data_Files/Text_Files/*.txt"):
+        os.remove(f)
+
     update_query("UPDATE Tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     update_query("UPDATE Tracker SET status='IN_RUNNING', emergency_exit=false, No_Cases=0, No_Year_NoData=0, "
                  "No_Year_Error=0, No_Error=0, Start_Date='" + start_date + "', End_Date='" +
                  end_date + "' WHERE Name='" + court_name + "'")
-    return jsonify(court_controller(court_name, bench, start_date, end_date))
+
+    res = jsonify(court_controller(court_name, bench, start_date, end_date))
+
+    for filename in glob.glob(module_directory + "/Data_Files/PDF_Files/*.pdf"):
+        shutil.copy(filename, module_directory + "/../bucket_dir/PDF_Files")
+    for filename in glob.glob(module_directory + "/Data_Files/Text_Files/*.txt"):
+        shutil.copy(filename, module_directory + "/../bucket_dir/Text_Files")
+
+    return res
 
 
 @app.route('/current-scrap/<string:court_name>')
@@ -95,6 +110,10 @@ def start_json():
 
     update_query("UPDATE Tracker_JSON SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     if select_json_query(court_name, start_date, end_date):
+
+        for filename in glob.glob(module_directory + "/Data_Files/JSON_Files/*.json"):
+            shutil.copy(filename, module_directory + "/../bucket_dir/JSON_Files")
+
         return '', 200
     else:
         return '', 500
