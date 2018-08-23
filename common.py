@@ -1,17 +1,25 @@
 # fw = open(module_directory + "/../Data_Files/Html_Files/" + court_name + "_" +
 #           str(start_date).replace("/", "-") + "_" + str(i) + ".html", "w")
 # fw.write(str(res))
-import glob
-import shutil
+import logging
+
+from googleapiclient import discovery
+from oauth2client.client import GoogleCredentials
 
 
-def file_transfer_to_bucket():
-    while True:
-        for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/JSON_Files/*.json"):
-            shutil.copy(filename, "/home/karaa_krypt/bucket_dir/JSON_Files")
+def transfer_to_bucket(folder_name, filename):
+    try:
+        credentials = GoogleCredentials.get_application_default()
+        service = discovery.build('storage', 'v1', credentials=credentials)
 
-        for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/*.pdf"):
-            shutil.copy(filename, "/home/karaa_krypt/bucket_dir/PDF_Files")
+        bucket = 'ecl-original'
 
-        for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/*.txt"):
-            shutil.copy(filename, "/home/karaa_krypt/bucket_dir/Text_Files")
+        body = {'name': str(folder_name) + '/' + str(filename[filename.rfind("/")+1:])}
+        req = service.objects().insert(bucket=bucket, body=body, media_body=filename)
+        resp = req.execute()
+
+        return True
+
+    except Exception as e:
+        logging.error("Failed to transfer! %s", e)
+        return False

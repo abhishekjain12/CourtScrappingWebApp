@@ -1,14 +1,13 @@
 import datetime
 import glob
 import os
-import shutil
 
 from flask import Flask, render_template, jsonify, request, send_from_directory
 
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
 from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query
-from common import file_transfer_to_bucket
+from common import transfer_to_bucket
 
 app = Flask(__name__)
 module_directory = os.path.dirname(__file__)
@@ -66,9 +65,9 @@ def start_scrap():
     res = jsonify(court_controller(court_name, bench, start_date, end_date))
 
     for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/*.pdf"):
-        shutil.copy(filename, "/home/karaa_krypt/bucket_dir/PDF_Files")
+        transfer_to_bucket('PDF_Files', filename)
     for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/*.txt"):
-        shutil.copy(filename, "/home/karaa_krypt/bucket_dir/Text_Files")
+        transfer_to_bucket('Text_Files', filename)
 
     return res
 
@@ -113,7 +112,7 @@ def start_json():
     if select_json_query(court_name, start_date, end_date):
 
         for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/JSON_Files/*.json"):
-            shutil.copy(filename, "/home/karaa_krypt/bucket_dir/JSON_Files")
+            transfer_to_bucket('JSON_Files', filename)
 
         return '', 200
     else:
@@ -156,11 +155,6 @@ def files(filename):
 @app.route('/logs/<path:filename>')
 def logs_file(filename):
     return send_from_directory(directory=module_directory + "/Utils/log_files", filename=filename)
-
-
-@app.route('/transfer')
-def transfer_files():
-    return file_transfer_to_bucket()
 
 
 @app.route('/UrcNL3M9m-hD/UrcNL3M9m-hD')
