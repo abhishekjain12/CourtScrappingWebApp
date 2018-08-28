@@ -172,7 +172,7 @@ def request_data(court_name, headers, start_date, end_date_):
                       "&to_date=" + str(end_date) + \
                       "&pet_name=" \
                       "&res_name=" \
-                      "&free_text=Jus"
+                      "&free_text=JUSTICE"
 
             response = requests.request("POST", url, data=payload, headers=headers, params=querystring,
                                         proxies=proxy_dict)
