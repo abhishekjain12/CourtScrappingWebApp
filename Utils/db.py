@@ -103,6 +103,27 @@ def select_query(query):
         return None
 
 
+def get_tables_info():
+    db = db_connect()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT TABLE_NAME, TABLE_ROWS FROM `information_schema`.`tables` "
+                       "WHERE `table_schema` = 'Courts_Data'")
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        if result:
+            return result
+        else:
+            return None
+
+    except Exception as e:
+        traceback.print_exc()
+        logging.error("Failed get_tables_info query: %s", e)
+        db.close()
+        return None
+
+
 def select_one_query(query):
     db = db_connect()
     try:

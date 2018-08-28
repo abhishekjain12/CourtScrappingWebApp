@@ -6,7 +6,7 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
-from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query
+from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info
 from common import transfer_to_bucket
 
 app = Flask(__name__)
@@ -23,13 +23,14 @@ def index():
                                         " ORDER BY id DESC LIMIT 100")
 
     tables = select_query("SHOW TABLES")
+    table_info = get_tables_info()
 
     log_files = []
     for file_ in glob.glob(module_directory + "/Utils/log_files/*.log"):
         log_files.append(file_[file_.rfind("/") + 1:])
 
     return render_template("index.html", tracker_data=tracker_data, tables=tables, tracker_history=tracker_history,
-                           tracker_json_history=tracker_json_history, log_files=log_files)
+                           tracker_json_history=tracker_json_history, log_files=log_files, table_info=table_info)
 
 
 @app.route('/get-bench-list/<string:court_name>')
