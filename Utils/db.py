@@ -107,8 +107,7 @@ def get_tables_info():
     db = db_connect()
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT TABLE_NAME, TABLE_ROWS FROM `information_schema`.`tables` "
-                       "WHERE `table_schema` = 'Courts_Data'")
+        cursor.execute("show table status")
         result = cursor.fetchall()
         cursor.close()
         db.close()
