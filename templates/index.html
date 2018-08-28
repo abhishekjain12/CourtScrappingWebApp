@@ -391,16 +391,14 @@
                               <tr>
                                   <th>TABLE Name</th>
                                   <th>Rows</th>
-                                  <th>Last Update Time</th>
                               </tr>
                             </thead>
 
                             <tbody>
                             {% for t_data in table_info %}
                               <tr>
-                                <td>{{ t_data['Name'] | replace('_', " ") }}</td>
-                                <td>{{ t_data['Rows'] }}</td>
-                                <td>{{ t_data['Update_time'] }}</td>
+                                <td>{{ t_data['name'] | replace('_', " ") }}</td>
+                                <td>{{ t_data['count(id)'] }}</td>
                               </tr>
                             {% endfor %}
                             </tbody>

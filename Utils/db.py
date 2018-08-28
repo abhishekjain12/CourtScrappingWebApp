@@ -104,13 +104,15 @@ def select_query(query):
 
 
 def get_tables_info():
-    db = db_connect()
     try:
-        cursor = db.cursor()
-        cursor.execute("show table status")
-        result = cursor.fetchall()
-        cursor.close()
-        db.close()
+        queries = select_query("""select concat("select '",table_name,"' as name, count(id) from ",table_name) as `query`
+        from `information_schema`.`tables` WHERE `table_schema` = 'Courts_Data'""")
+
+        result = []
+        for query in queries:
+            res = select_one_query(query['query'])
+            result.append(res)
+
         if result:
             return result
         else:
@@ -119,7 +121,6 @@ def get_tables_info():
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed get_tables_info query: %s", e)
-        db.close()
         return None
 
 
