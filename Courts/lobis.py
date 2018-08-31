@@ -69,7 +69,7 @@ def request_pdf(url, case_id, court_name):
         return "NULL"
 
 
-def parse_html(html_str, court_name):
+def parse_html(html_str, court_name, dc):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         tr_list = soup.find_all('tr')
@@ -136,9 +136,9 @@ def parse_html(html_str, court_name):
 
             if case_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
-                                                               "corrigendum, pdf_file) VALUE ('" + case_no + "', '" + \
-                            petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + corrigendum + \
-                            "', '" + pdf_file + "')"
+                                                               "corrigendum, pdf_file, bench_code) VALUE ('" + \
+                            case_no + "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + \
+                            "', '" + corrigendum + "', '" + pdf_file + "', " + dc + ")"
                 insert_query(sql_query)
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
@@ -153,9 +153,9 @@ def parse_html(html_str, court_name):
         return False
 
 
-def offset_link(html_str, headers, court_name):
+def offset_link(html_str, headers, court_name, dc):
     try:
-        if not parse_html(html_str, court_name):
+        if not parse_html(html_str, court_name, dc):
             return False
 
         soup = BeautifulSoup(html_str, "html.parser")
@@ -181,7 +181,7 @@ def offset_link(html_str, headers, court_name):
                 response = requests.request("POST", page_link, headers=headers, proxies=proxy_dict)
                 res = response.text
 
-                if not parse_html(res, court_name):
+                if not parse_html(res, court_name, dc):
                     logging.error("Failed for url: " + page_link)
                     return False
 
@@ -230,7 +230,7 @@ def request_data(court_name, dc, headers, start_date, end_date_):
                 start_date = end_date
                 continue
 
-            if not offset_link(res, headers, court_name):
+            if not offset_link(res, headers, court_name, dc):
                 logging.error("Failed to parse data from date: " + str(start_date))
 
             start_date = end_date

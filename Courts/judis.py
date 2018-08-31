@@ -72,7 +72,7 @@ def request_pdf(url, case_id, court_name):
         return str("NULL")
 
 
-def parse_html(html_str, court_name):
+def parse_html(html_str, court_name, bench_code):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         table_list = soup.find_all('table')
@@ -121,14 +121,14 @@ def parse_html(html_str, court_name):
                     if i == 9:
                         a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
                         pdf_file = escape_string(base_url + a_link)
-                        pdf_file = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+                        # pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
 
             if case_no != "NULL" and insert_check and petitioner != 'Judgment Information System':
                 sql_query = "INSERT INTO " + str(court_name) + \
                             " (case_no, petitioner, respondent, judgment_date, judge_name, text_data, text_file, " \
-                            "pdf_file) VALUE ('" + case_no + "', '" + petitioner + "', '" + respondent + "', '" + \
-                            judgment_date + "', '" + judge_name + "', '" + text + "', '" + text_file + "', '" + \
-                            pdf_file + "')"
+                            "pdf_file, bench_code) VALUE ('" + case_no + "', '" + petitioner + "', '" + respondent + \
+                            "', '" + judgment_date + "', '" + judge_name + "', '" + text + "', '" + text_file + \
+                            "', '" + pdf_file + "', " + bench_code + ")"
                 insert_query(sql_query)
 
                 update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
@@ -186,7 +186,7 @@ def request_data(court_name, bench_code, start_date, end_date_):
                 start_date = end_date
                 continue
 
-            if not parse_html(res, court_name):
+            if not parse_html(res, court_name, bench_code):
                 logging.error("Failed to parse data from date: " + str(start_date))
 
             start_date = end_date
