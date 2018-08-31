@@ -142,7 +142,7 @@ def cancel_json(court_name):
 def get_json(court_name):
     res = {'Name': []}
 
-    for file_ in glob.glob(module_directory + "/Data_Files/JSON_Files/" + court_name + "_*.json"):
+    for file_ in glob.glob(module_directory + "/Data_Files/JSON_Files/" + court_name + "-*.json"):
         res['Name'].append(file_[file_.rfind("/")+1:])
 
     return jsonify(res)
