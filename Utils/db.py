@@ -188,7 +188,7 @@ def select_json_query(table_name, start_date, end_date):
             result = cursor.fetchall()
             cursor.close()
 
-            file_path = module_directory + "/../Data_Files/JSON_Files/" + str(table_name) + "_" + \
+            file_path = module_directory + "/../Data_Files/JSON_Files/" + str(table_name) + "-" + \
                         str(i + 1 + j_count) + ".json"
             fw = open(file_path, "w")
             fw.write(json.dumps(result))

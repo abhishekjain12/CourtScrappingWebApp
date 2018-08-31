@@ -220,10 +220,10 @@ def request_data(court_name, headers, start_date_, end_date_):
                     update_history_tracker(court_name)
                     return True
 
-                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=180)
+                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=1)
                             ).strftime("%d-%m-%Y")
 
-                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=180) < \
+                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=1) < \
                         datetime.datetime.strptime(str(end_date), "%d-%m-%Y"):
                     logging.error("END date Exceed.")
                     break
