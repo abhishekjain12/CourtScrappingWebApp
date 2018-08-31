@@ -181,8 +181,8 @@ metadata = [
     },
     {
         'court_name': "Orissa",
-        'court_id': 7,
-        'file_name': "judis",
+        'court_id': 19,
+        'file_name': "lobis",
         'date_format': '%d/%m/%Y',
         'o_date_format': '%d/%m/%Y',
         'bench': None,

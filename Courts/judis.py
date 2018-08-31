@@ -128,7 +128,7 @@ def parse_html(html_str, court_name, bench_code):
                             " (case_no, petitioner, respondent, judgment_date, judge_name, text_data, text_file, " \
                             "pdf_file, bench_code) VALUE ('" + case_no + "', '" + petitioner + "', '" + respondent + \
                             "', '" + judgment_date + "', '" + judge_name + "', '" + text + "', '" + text_file + \
-                            "', '" + pdf_file + "', " + bench_code + ")"
+                            "', '" + pdf_file + "', " + str(bench_code) + ")"
                 insert_query(sql_query)
 
                 update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
