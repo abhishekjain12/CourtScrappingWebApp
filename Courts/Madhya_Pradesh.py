@@ -250,9 +250,6 @@ def request_data(court_name, headers, start_date_, end_date_):
                 response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict,
                                             verify=False)
                 res = response.text
-                fw = open(module_directory + "/../Data_Files/Html_Files/" + court_name + "_" +
-                          str(start_date).replace("/", "-") + "_" + str(i) + ".html", "w")
-                fw.write(str(res))
 
                 if "no jugdement or order found that you want to search" in res.lower():
                     logging.error("NO data Found for start date: " + str(start_date))

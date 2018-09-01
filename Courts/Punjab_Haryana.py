@@ -28,8 +28,7 @@ def request_pdf(auth, case_id, court_name, headers):
     payload = "vercode=" + str(vercode) + \
               "&submit=Submit"
 
-    response = requests.request("POST", url, data=payload, headers=headers, params=querystring, proxies=proxy_dict,
-                                verify=False)
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring, proxies=proxy_dict)
 
     if response.status_code == 200:
         res = response.text
@@ -134,6 +133,7 @@ def parse_html(html_str, court_name, headers):
         return True
 
     except Exception as e:
+        traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
         sql_query = "UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'"
         update_query(sql_query)
@@ -176,7 +176,7 @@ def request_data(court_name, headers, start_date, end_date_):
                       "&free_text=JUSTICE"
 
             response = requests.request("POST", url, data=payload, headers=headers, params=querystring,
-                                        proxies=proxy_dict, verify=False)
+                                        proxies=proxy_dict)
             res = response.text
 
             if "no data found" in res.lower():
@@ -212,7 +212,7 @@ def request_data(court_name, headers, start_date, end_date_):
 
 def main(court_name, start_date, end_date):
     logs.initialize_logger("PUNJAB_HARYANA")
-    r = requests.request('GET', base_url, proxies=proxy_dict, verify=False)
+    r = requests.request('GET', base_url, proxies=proxy_dict)
 
     headers = {
         'Content-Type': "application/x-www-form-urlencoded",
