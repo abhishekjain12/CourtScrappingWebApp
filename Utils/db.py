@@ -12,7 +12,7 @@ module_directory = os.path.dirname(__file__)
 def db_connect():
     return pymysql.connect(host="localhost",
                            user="root",
-                           password="Future@4",
+                           password="krypton212",
                            db="Courts_Data",
                            # charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
