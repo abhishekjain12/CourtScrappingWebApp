@@ -134,6 +134,7 @@ def parse_html(html_str, court_name):
         return True
 
     except Exception as e:
+        traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
         update_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
@@ -149,6 +150,9 @@ def offset_link(html_str, o_payload, court_name, headers):
         table_tag = soup.find_all('table')[1]
         table_soup = BeautifulSoup(str(table_tag), "html.parser")
         b_tag = table_soup.find_all('b')[0]
+        if str(b_tag.decode_contents()).lower().find('no record found') != -1:
+            return True
+
         total_records = int(re.findall('\d+', str(b_tag.decode_contents()))[-1])
         total_calls = ceil(total_records/15)
 
@@ -170,6 +174,7 @@ def offset_link(html_str, o_payload, court_name, headers):
 
         return True
     except Exception as e:
+        traceback.print_exc()
         logging.error("Error in offset_link. %s", e)
         return False
 

@@ -28,7 +28,8 @@ def request_pdf(auth, case_id, court_name, headers):
     payload = "vercode=" + str(vercode) + \
               "&submit=Submit"
 
-    response = requests.request("POST", url, data=payload, headers=headers, params=querystring, proxies=proxy_dict)
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring, proxies=proxy_dict,
+                                verify=False)
 
     if response.status_code == 200:
         res = response.text
@@ -175,7 +176,7 @@ def request_data(court_name, headers, start_date, end_date_):
                       "&free_text=JUSTICE"
 
             response = requests.request("POST", url, data=payload, headers=headers, params=querystring,
-                                        proxies=proxy_dict)
+                                        proxies=proxy_dict, verify=False)
             res = response.text
 
             if "no data found" in res.lower():
@@ -211,7 +212,7 @@ def request_data(court_name, headers, start_date, end_date_):
 
 def main(court_name, start_date, end_date):
     logs.initialize_logger("PUNJAB_HARYANA")
-    r = requests.request('GET', base_url, proxies=proxy_dict)
+    r = requests.request('GET', base_url, proxies=proxy_dict, verify=False)
 
     headers = {
         'Content-Type': "application/x-www-form-urlencoded",
