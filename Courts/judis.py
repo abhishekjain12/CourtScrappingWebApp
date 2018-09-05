@@ -117,7 +117,7 @@ def parse_html(html_str, court_name, bench_code):
                         a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
                         text_dir = request_text(base_url + a_link, case_no, court_name)
                         text = escape_string(text_dir['data'])
-                        text_file = escape_string(text_dir['url'])
+                        text_file = escape_string(base_url + a_link)
                     if i == 9:
                         a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
                         pdf_file = escape_string(base_url + a_link)
