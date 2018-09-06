@@ -18,12 +18,12 @@ from Utils.db import insert_query, update_query, select_one_query, update_histor
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
-base_url = "https://phhc.gov.in/"
+base_url = "https://phhc.gov.in"
 vercode = "d02a"
 
 
 def request_pdf(auth, case_id, court_name, headers):
-    url = base_url + "download_file.php"
+    url = base_url + "/download_file.php"
     querystring = {"auth": auth}
     payload = "vercode=" + str(vercode) + \
               "&submit=Submit"
@@ -114,7 +114,7 @@ def parse_html(html_str, court_name, headers):
                     if i == 5:
                         a_link = BeautifulSoup(str(td), "html.parser").a.get('onclick')
                         a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
-                        pdf_file = escape_string(base_url + a_formatted)
+                        pdf_file = escape_string(base_url + "/" + a_formatted)
 
                         pdf_data = escape_string(request_pdf(
                             str(pdf_file).replace(base_url + "download_file.php?auth=", ""), case_no, court_name,
@@ -140,9 +140,49 @@ def parse_html(html_str, court_name, headers):
         return False
 
 
+def offset_link(html_str, headers, court_name):
+    try:
+        if not parse_html(html_str, court_name, headers):
+            return False
+
+        soup = BeautifulSoup(html_str, "html.parser")
+        table_tag = soup.find_all('table', {'id': 'tables11'})[0]
+        table_soup = BeautifulSoup(str(table_tag), "html.parser")
+        tr_tag = table_soup.find_all('tr', {'align': 'center'})[1]
+        tr_soup = BeautifulSoup(str(tr_tag), "html.parser")
+        a_tags = tr_soup.find_all('a')
+        a_link_list = []
+
+        for a_tag in a_tags:
+            a_link = base_url + a_tag.get('href')
+            a_link_list.append(a_link)
+
+        a_link_list_unique = list(set(a_link_list))
+        i = 0
+        for page_link in a_link_list_unique:
+            i += 1
+
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit['emergency_exit'] == 1:
+                break
+
+            if page_link != "https://phhc.gov.in./home.php?search_param=free_text_search_judgment&page_no=1":
+                response = requests.request("POST", page_link, headers=headers, proxies=proxy_dict)
+                res = response.text
+
+                if not parse_html(res, court_name, headers):
+                    logging.error("Failed for url: " + page_link)
+                    return False
+
+        return True
+    except Exception as e:
+        logging.error("Error in offset_link. %s", e)
+        return False
+
+
 def request_data(court_name, headers, start_date, end_date_):
     try:
-        url = base_url + "home.php"
+        url = base_url + "/home.php"
 
         i = 0
         while True:
@@ -173,7 +213,7 @@ def request_data(court_name, headers, start_date, end_date_):
                       "&to_date=" + str(end_date) + \
                       "&pet_name=" \
                       "&res_name=" \
-                      "&free_text=JUSTICE"
+                      "&free_text=Justice"
 
             response = requests.request("POST", url, data=payload, headers=headers, params=querystring,
                                         proxies=proxy_dict)
@@ -187,7 +227,7 @@ def request_data(court_name, headers, start_date, end_date_):
                 start_date = end_date
                 continue
 
-            if not parse_html(res, court_name, headers):
+            if not offset_link(res, headers, court_name):
                 logging.error("Failed to parse data from date: " + str(start_date))
 
             start_date = end_date

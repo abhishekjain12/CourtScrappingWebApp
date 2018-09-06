@@ -107,7 +107,7 @@ def parse_html(html_str, court_name, bench):
                             a_tag = BeautifulSoup(str(td), "html.parser").a
                             if a_tag:
                                 a_link = a_tag.get('href')
-                                # pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+                                pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
                                 pdf_file = base_url + a_link
 
                         judgment_date = escape_string(td_text.replace("Judgement", "")
@@ -250,9 +250,6 @@ def request_data(court_name, headers, start_date_, end_date_):
 
                 response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict)
                 res = response.text
-                fw = open(module_directory + "/../Data_Files/Html_Files/" + court_name + "_" +
-                          str(start_date).replace("/", "-") + "_" + str(i) + ".html", "w")
-                fw.write(str(res))
 
                 if "no jugdement or order found that you want to search" in res.lower():
                     logging.error("NO data Found for start date: " + str(start_date))
