@@ -262,4 +262,8 @@ def main(court_name, dc, start_date, end_date):
         'Cache-Control': "no-cache",
         'Cookie': 'PHPSESSID=' + str(requests.utils.dict_from_cookiejar(r.cookies)['PHPSESSID']),
     }
+
+    payload = "rb=1&selhc=" + str(dc) + "&Submit=Submit"
+    requests.request("POST", base_url, data=payload, headers=headers, proxies=proxy_dict)
+
     return request_data(court_name, dc, headers, start_date, end_date)
