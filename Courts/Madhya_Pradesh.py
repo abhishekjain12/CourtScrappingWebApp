@@ -28,7 +28,7 @@ base_url = "https://mphc.gov.in"
 
 def request_pdf(url, case_id, court_name):
     try:
-        response = requests.request("GET", url, verify=False, proxies=proxy_dict)
+        response = requests.request("GET", url, proxies=proxy_dict)
         if response.status_code == 200:
             res = response.text
 
@@ -107,7 +107,7 @@ def parse_html(html_str, court_name, bench):
                             a_tag = BeautifulSoup(str(td), "html.parser").a
                             if a_tag:
                                 a_link = a_tag.get('href')
-                                pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+                                # pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
                                 pdf_file = base_url + a_link
 
                         judgment_date = escape_string(td_text.replace("Judgement", "")
@@ -220,10 +220,10 @@ def request_data(court_name, headers, start_date_, end_date_):
                     update_history_tracker(court_name)
                     return True
 
-                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=1)
+                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=180)
                             ).strftime("%d-%m-%Y")
 
-                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=1) < \
+                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=180) < \
                         datetime.datetime.strptime(str(end_date), "%d-%m-%Y"):
                     logging.error("END date Exceed.")
                     break
@@ -245,11 +245,14 @@ def request_data(court_name, headers, start_date_, end_date_):
                           "&btn_search=is" \
                           "&bench=" \
                           "&sort=jo" \
-                          "&ad=DESC"
+                          "&ad=DESC" \
+                          "&code="
 
-                response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict,
-                                            verify=False)
+                response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict)
                 res = response.text
+                fw = open(module_directory + "/../Data_Files/Html_Files/" + court_name + "_" +
+                          str(start_date).replace("/", "-") + "_" + str(i) + ".html", "w")
+                fw.write(str(res))
 
                 if "no jugdement or order found that you want to search" in res.lower():
                     logging.error("NO data Found for start date: " + str(start_date))
@@ -288,6 +291,7 @@ def main(court_name, start_date, end_date):
 
     headers = {
         'Content-Type': "application/x-www-form-urlencoded",
+        'X-Requested-With': "XMLHttpRequest",
         'Cookie': 'PHPSESSID=' + str(requests.utils.dict_from_cookiejar(r.cookies)['PHPSESSID']),
         'Cache-Control': "no-cache",
     }
