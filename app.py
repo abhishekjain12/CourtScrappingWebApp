@@ -6,7 +6,8 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
-from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info
+from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info, \
+    update_history_tracker
 from common import transfer_to_bucket
 
 app = Flask(__name__)
@@ -54,7 +55,6 @@ def start_scrap():
 
     for f in glob.glob(module_directory + "/Data_Files/PDF_Files/*.pdf"):
         os.remove(f)
-
     for f in glob.glob(module_directory + "/Data_Files/Text_Files/*.txt"):
         os.remove(f)
 
@@ -63,14 +63,23 @@ def start_scrap():
                  "No_Year_Error=0, No_Error=0, Start_Date='" + start_date + "', End_Date='" +
                  end_date + "' WHERE Name='" + court_name + "'")
 
-    res = jsonify(court_controller(court_name, bench, start_date, end_date))
+    res = court_controller(court_name, bench, start_date, end_date)
+    update_query("UPDATE Tracker SET status = 'IN_BUCKET_TRANSFER' WHERE Name = '" + str(court_name) + "'")
 
     for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/*.pdf"):
         transfer_to_bucket('PDF_Files', filename)
     for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/*.txt"):
         transfer_to_bucket('Text_Files', filename)
 
-    return res
+    if res:
+        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
+                     str(court_name) + "'")
+    else:
+        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED', "
+                     "emergency_exit=true WHERE Name = '" + str(court_name) + "'")
+
+    update_history_tracker(court_name)
+    return jsonify(res)
 
 
 @app.route('/current-scrap/<string:court_name>')

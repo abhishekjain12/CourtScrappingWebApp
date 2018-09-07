@@ -232,21 +232,12 @@ def request_data(court_name, headers, start_date, end_date_):
 
             start_date = end_date
 
-        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
-                     str(court_name) + "'")
-        update_history_tracker(court_name)
-
         return True
 
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
-
-        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
-                     str(court_name) + "'")
-        update_history_tracker(court_name)
-
         return False
 
 
