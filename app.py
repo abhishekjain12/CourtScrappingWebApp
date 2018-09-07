@@ -53,11 +53,6 @@ def start_scrap():
     start_date = request.form['start_date']
     end_date = request.form['end_date']
 
-    for f in glob.glob(module_directory + "/Data_Files/PDF_Files/*.pdf"):
-        os.remove(f)
-    for f in glob.glob(module_directory + "/Data_Files/Text_Files/*.txt"):
-        os.remove(f)
-
     update_query("UPDATE Tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     update_query("UPDATE Tracker SET status='IN_RUNNING', emergency_exit=false, No_Cases=0, No_Year_NoData=0, "
                  "No_Year_Error=0, No_Error=0, Start_Date='" + start_date + "', End_Date='" +
@@ -68,8 +63,11 @@ def start_scrap():
 
     for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/*.pdf"):
         transfer_to_bucket('PDF_Files', filename)
+        os.remove(filename)
+
     for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/*.txt"):
         transfer_to_bucket('Text_Files', filename)
+        os.remove(filename)
 
     if res:
         update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
