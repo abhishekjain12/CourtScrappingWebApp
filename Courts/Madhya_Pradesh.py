@@ -173,10 +173,11 @@ def parse_html(html_str, court_name, bench):
                 if case_no != "NULL" and insert_check:
                     sql_query = "INSERT INTO " + str(court_name) + \
                                 " (case_no, petitioner, respondent, petitioner_advocate, respondent_advocate, " \
-                                "judgment_date, disposal_date, bench, judge_name, pdf_file)" \
+                                "judgment_date, disposal_date, bench, judge_name, pdf_file, pdf_filename)" \
                                 " VALUE ('" + case_no + "', '" + petitioner + "', '" + respondent + "', '" + \
                                 petitioner_advocate + "', '" + respondent_advocate + "', '" + judgment_date + "', '" + \
-                                disposal_date + "', '" + bench + "', '" + judge_name + "', '" + pdf_file + "')"
+                                disposal_date + "', '" + bench + "', '" + judge_name + "', '" + pdf_file + "', '" + \
+                                court_name + "_" + slugify(case_no) + ".pdf')"
                     insert_query(sql_query)
 
                     update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +

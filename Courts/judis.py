@@ -126,9 +126,10 @@ def parse_html(html_str, court_name, bench_code):
             if case_no != "NULL" and insert_check and petitioner != 'Judgment Information System':
                 sql_query = "INSERT INTO " + str(court_name) + \
                             " (case_no, petitioner, respondent, judgment_date, judge_name, text_data, text_file, " \
-                            "pdf_file, bench_code) VALUE ('" + case_no + "', '" + petitioner + "', '" + respondent + \
-                            "', '" + judgment_date + "', '" + judge_name + "', '" + text + "', '" + text_file + \
-                            "', '" + pdf_file + "', " + str(bench_code) + ")"
+                            "pdf_file, bench_code, pdf_filename) VALUE ('" + case_no + "', '" + petitioner + "', '" + \
+                            respondent + "', '" + judgment_date + "', '" + judge_name + "', '" + text + "', '" + \
+                            text_file + "', '" + pdf_file + "', " + str(bench_code) + ", '" + court_name + "_" + \
+                            slugify(case_no) + ".txt')"
                 insert_query(sql_query)
 
                 update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")

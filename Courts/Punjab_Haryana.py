@@ -122,8 +122,9 @@ def parse_html(html_str, court_name, headers):
 
             if case_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
-                                                               "pdf_file) VALUE ('" + case_no + "', '" + \
-                            petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + pdf_file + "')"
+                                                               "pdf_file, pdf_filename) VALUE ('" + case_no + "', '" + \
+                            petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + pdf_file + "', '" + \
+                            court_name + "_" + slugify(case_no) + ".pdf')"
                 insert_query(sql_query)
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
@@ -148,7 +149,11 @@ def offset_link(html_str, headers, court_name):
         soup = BeautifulSoup(html_str, "html.parser")
         table_tag = soup.find_all('table', {'id': 'tables11'})[0]
         table_soup = BeautifulSoup(str(table_tag), "html.parser")
-        tr_tag = table_soup.find_all('tr', {'align': 'center'})[1]
+        tr_tag = table_soup.find_all('tr', {'align': 'center'})
+        if len(tr_tag) <= 0:
+            return True
+
+        tr_tag = tr_tag[1]
         tr_soup = BeautifulSoup(str(tr_tag), "html.parser")
         a_tags = tr_soup.find_all('a')
         a_link_list = []
