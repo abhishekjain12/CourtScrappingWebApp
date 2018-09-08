@@ -116,9 +116,9 @@ def parse_html(html_str, court_name, headers):
                         a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
                         pdf_file = escape_string(base_url + "/" + a_formatted)
 
-                        pdf_data = escape_string(request_pdf(
-                            str(pdf_file).replace(base_url + "download_file.php?auth=", ""), case_no, court_name,
-                            headers))
+                        # pdf_data = escape_string(request_pdf(
+                        #     str(pdf_file).replace(base_url + "download_file.php?auth=", ""), case_no, court_name,
+                        #     headers))
 
             if case_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
