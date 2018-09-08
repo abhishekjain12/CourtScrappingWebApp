@@ -236,7 +236,7 @@ function current_s(court_name) {
                 tr_list += "<td>" + data.status + "</td>";
                 tr_list += "</tr>";
 
-                if ("IN_RUNNING" !== data.status || "IN_BUCKET_TRANSFER" !== data.status){
+                if ("IN_RUNNING" !== data.status){
                     $('#cancel-btn-s').addClass("d-none");
                     $('#submit-btn-s').removeClass("d-none");
                     clearInterval(s_interval);
@@ -340,7 +340,7 @@ function running_s() {
                 tr_list += "<td>" + data.status + "</td>";
                 tr_list += "</tr>";
 
-                if ("IN_RUNNING" === data.status || "IN_BUCKET_TRANSFER" === data.status){
+                if ("IN_RUNNING" === data.status){
                      l_btn.removeClass("loading-btn");
                      se_btn.removeClass("d-none");
                      s_btn.removeClass("disabled");

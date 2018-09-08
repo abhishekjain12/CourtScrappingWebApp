@@ -1,6 +1,7 @@
 import datetime
-import glob
 import os
+
+from glob import glob
 from random import randint
 
 from flask import Flask, render_template, jsonify, request, send_from_directory
@@ -29,7 +30,7 @@ def index():
     table_info = get_tables_info()
 
     log_files = []
-    for file_ in glob.glob(module_directory + "/Utils/log_files/*.log"):
+    for file_ in glob(module_directory + "/Utils/log_files/*.log"):
         log_files.append(file_[file_.rfind("/") + 1:])
 
     return render_template("index.html", tracker_data=tracker_data, tables=tables, tracker_history=tracker_history,
@@ -63,13 +64,13 @@ def start_scrap():
     res = court_controller(court_name, bench, start_date, end_date)
     update_query("UPDATE Tracker SET status = 'IN_BUCKET_TRANSFER' WHERE Name = '" + str(court_name) + "'")
 
-    for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/*.pdf"):
-        transfer_to_bucket('PDF_Files', filename)
-        os.remove(filename)
+    for filename in glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + str(court_name) + "*.pdf"):
+        if transfer_to_bucket('PDF_Files', filename):
+            os.remove(filename)
 
-    for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/*.txt"):
-        transfer_to_bucket('Text_Files', filename)
-        os.remove(filename)
+    for filename in glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/Text_Files/" + str(court_name) + "*.txt"):
+        if transfer_to_bucket('Text_Files', filename):
+            os.remove(filename)
 
     if res:
         update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
@@ -109,9 +110,6 @@ def start_json():
     start_date = request.form['start_date']
     end_date = request.form['end_date']
 
-    for f in glob.glob(module_directory + "/Data_Files/JSON_Files/*.json"):
-        os.remove(f)
-
     for data in metadata:
         if data['court_name'] == court_name:
             start_date = (datetime.datetime.strptime(str(start_date), "%d/%m/%Y")).strftime(data['o_date_format'])
@@ -121,8 +119,9 @@ def start_json():
     update_query("UPDATE Tracker_JSON SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     if select_json_query(court_name, start_date, end_date):
 
-        for filename in glob.glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/JSON_Files/*.json"):
-            transfer_to_bucket('JSON_Files', filename)
+        for filename in glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/JSON_Files/*.json"):
+            if transfer_to_bucket('JSON_Files', filename):
+                os.remove(filename)
 
         return '', 200
     else:
@@ -151,7 +150,7 @@ def cancel_json(court_name):
 def get_json(court_name):
     res = {'Name': []}
 
-    for file_ in glob.glob(module_directory + "/Data_Files/JSON_Files/" + court_name + "-*.json"):
+    for file_ in glob(module_directory + "/Data_Files/JSON_Files/" + court_name + "-*.json"):
         res['Name'].append(file_[file_.rfind("/")+1:])
 
     return jsonify(res)
