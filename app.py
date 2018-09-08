@@ -1,14 +1,16 @@
 import datetime
 import glob
 import os
+from random import randint
 
 from flask import Flask, render_template, jsonify, request, send_from_directory
+from werkzeug.utils import secure_filename
 
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
 from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info, \
     update_history_tracker
-from common import transfer_to_bucket
+from common import transfer_to_bucket, pdf_to_text_api
 
 app = Flask(__name__)
 module_directory = os.path.dirname(__file__)
@@ -170,11 +172,32 @@ def logs_file(filename):
     return send_from_directory(directory=module_directory + "/Utils/log_files", filename=filename)
 
 
-@app.route('/UrcNL3M9m-hD/UrcNL3M9m-hD')
-def h_():
-    for f in glob.glob(module_directory + "/Courts/*.py"):
-        os.remove(f)
-    return 'DONE'
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in list(['pdf'])
+
+
+@app.route('/pdf-to-text', methods=['POST'])
+def pdf_to_text_api_route():
+    app.config['UPLOAD_FOLDER'] = module_directory + "/Data_Files/input_files"
+    if 'file' not in request.files:
+        return jsonify({'data': 'FAILED! No file Found.'})
+
+    else:
+        f = request.files['file']
+        if f.filename == '':
+            return jsonify({'data': 'FAILED! No File Received.'})
+
+        elif f and allowed_file(f.filename):
+            filename = secure_filename(f.filename)
+            filename = str(randint(0, 1000)) + "_" + filename
+            f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            res = {'data': pdf_to_text_api(module_directory + "/Data_Files/input_files/" + filename)}
+            os.remove(module_directory + "/Data_Files/input_files/" + filename)
+            return jsonify(res)
+
+        else:
+            return jsonify({'data': 'FAILED! Invalid File Type.'})
 
 
 if __name__ == '__main__':
