@@ -154,7 +154,7 @@ def request_data(court_name, start_date, end_date_):
             response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict)
             res = response.text
 
-            if "invalid inputs given" in res.lower():
+            if "no judgement found for your search" in res.lower():
                 logging.error("NO data Found for start date: " + str(start_date))
                 update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
                              str(court_name) + "'")
