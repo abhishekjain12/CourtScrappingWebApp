@@ -134,7 +134,7 @@ def request_data(court_name, start_date, end_date_):
                 return True
 
             data = {'ctl00$CPHBody$DropDownListYear': str(month_year[-4:]),
-                    'ctl00$CPHBody$DropDownListMonth': str(month_year[:-4]).replace("0", ""),
+                    'ctl00$CPHBody$DropDownListMonth': str(month_year[:-4]).lstrip("0"),
                     'ctl00$CPHBody$TextBox1': '',
                     'ctl00$CPHBody$SM1': 'ctl00$CPHBody$SM1|ctl00$CPHBody$DropDownListMonth'
                     }

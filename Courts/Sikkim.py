@@ -174,7 +174,7 @@ def request_data(court_name, start_date, end_date_):
 
             payload = "form_build_id=form-BS37MKVfuGmv9fgHWUqr3U9nFCjolonq-Nnenj3Ks24" \
                       "&form_id=ajax_example_form" \
-                      "&ordermonth=" + str(month_year[:-2]).replace("0", "") + \
+                      "&ordermonth=" + str(month_year[:-2]).lstrip("0") + \
                       "&orderyear=" + str(year) + \
                       "&_triggering_element_name=op" \
                       "&_triggering_element_value=Search" \

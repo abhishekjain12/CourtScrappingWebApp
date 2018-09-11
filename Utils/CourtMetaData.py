@@ -83,6 +83,14 @@ metadata = [
         'bench': None,
     },
     {
+        'court_name': "Goa",
+        'court_id': 1234,
+        'file_name': "Goa",
+        'date_format': '%d-%m-%Y',
+        'o_date_format': '%d-%m-%Y',
+        'bench': None,
+    },
+    {
         'court_name': "Himachal_Pradesh",
         'court_id': 444,
         'file_name': "Himachal_Pradesh",

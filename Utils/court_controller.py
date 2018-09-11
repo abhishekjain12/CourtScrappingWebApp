@@ -1,7 +1,7 @@
 import datetime
 
 from Courts import Manipur, judis, lobis, Bombay, Calcutta, Karnataka, Arunachal_Pradesh, Himachal_Pradesh, \
-    Madhya_Pradesh, Mizoram, Nagaland, Punjab_Haryana, Sikkim, Supreme_Court
+    Madhya_Pradesh, Mizoram, Nagaland, Punjab_Haryana, Sikkim, Supreme_Court, Goa
 from Utils.CourtMetaData import metadata
 
 
@@ -74,6 +74,9 @@ def court_controller(court_name, bench, start_date, end_date):
 
         if str(code_file) == 'Supreme_Court':
             return Supreme_Court.main(court_name, start_date, end_date)
+
+        if str(code_file) == 'Goa':
+            return Goa.main(court_name, start_date, end_date)
 
     else:
         return False
