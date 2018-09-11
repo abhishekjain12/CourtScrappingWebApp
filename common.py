@@ -44,7 +44,7 @@ def pdf_to_text_api(file_path):
             interpreter.process_page(page)
             text_data = string_io.getvalue()
 
-        return str(text_data)
+        return str(text_data).strip().replace('\n', '').replace('\f', '')
 
     except Exception as e:
         traceback.print_exc()
