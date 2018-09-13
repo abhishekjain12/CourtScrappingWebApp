@@ -162,8 +162,8 @@ def parse_html(html_str, court_name, flag):
                         pdf_data = escape_string(request_pdf(str(base_url + a_tag.get('href')), case_no, court_name))
 
                 if i == 4:
-                    span_tag = BeautifulSoup(str(td), "html.parser").span
-                    party = str(span_tag.decode_contents()).split("<br/>")
+                    span_tag = BeautifulSoup(str(td), "html.parser")
+                    party = str(span_tag.text).split("<br/>")
                     petitioner = escape_string(str(party[0]).strip())
                     respondent = escape_string(str(party[2]).strip())
 
