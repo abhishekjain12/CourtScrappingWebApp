@@ -66,8 +66,8 @@ def request_pdf(url, case_id, court_name):
 
 def parse_html(html_str, court_name, bench):
     try:
-        soup = BeautifulSoup(html_str.replace("<b>", "").replace("</b>", "").replace("</br>", "").replace("<b", ""),
-                             "html.parser")
+        soup = BeautifulSoup(html_str.replace("<b>", "").replace("</b>", "").replace("<br>", "").replace("</br>", "")
+                             .replace("<b", "").replace("<br< p=""></br<>", ""), "html.parser")
         tr_list = soup.find_all('tr')
         del tr_list[0:7]
 
@@ -110,8 +110,8 @@ def parse_html(html_str, court_name, bench):
                                 pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
                                 pdf_file = base_url + a_link
 
-                        judgment_date = escape_string(td_text.replace("Judgement", "")
-                                                             .replace("(AFR)", "").replace("NA", "").strip())
+                        judgment_date = escape_string(td_text.replace("Judgement", "").replace("Orders", "")
+                                                      .replace("r", "").replace("(AFR)", "").replace("NA", "").strip())
 
             if select_count_query(str(court_name), str(case_no)):
                 insert_check = True
@@ -221,10 +221,10 @@ def request_data(court_name, headers, start_date_, end_date_):
                     update_history_tracker(court_name)
                     return True
 
-                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=180)
+                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=1)
                             ).strftime("%d-%m-%Y")
 
-                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=180) < \
+                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=1) < \
                         datetime.datetime.strptime(str(end_date), "%d-%m-%Y"):
                     logging.error("END date Exceed.")
                     break
@@ -239,7 +239,6 @@ def request_data(court_name, headers, start_date_, end_date_):
                           "&txtcounsel=" \
                           "&date1=" + str(start_date) + \
                           "&date2=" + str(end_date) + \
-                          "&onlyafr=Y" \
                           "&court=" + str(bench) + \
                           "&lst_judge1=0" \
                           "&lst_judge2=0" \
@@ -248,6 +247,11 @@ def request_data(court_name, headers, start_date_, end_date_):
                           "&sort=jo" \
                           "&ad=DESC" \
                           "&code="
+
+                if int(end_date[-4:]) <= 2014 and int(start_date[-4:]) <= 2014:
+                    payload += "&onlyafr=N"
+                else:
+                    payload += "&onlyafr=Y"
 
                 response = requests.request("POST", url, data=payload, headers=headers, proxies=proxy_dict)
                 res = response.text

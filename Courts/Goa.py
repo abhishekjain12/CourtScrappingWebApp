@@ -27,12 +27,11 @@ def request_pdf(case_id, court_name, val, headers):
         payload = 'submit1=Get&txtlist=' + str(int(val))
         response = requests.request("POST", base_url + 'jq_case.asp', data=payload, headers=headers, proxies=proxy_dict)
         if response.status_code == 200:
-            res = response.text
-            print(res)
+            # res = response.text
 
-            if "error" in res.lower():
-                logging.error("No data for: " + str(case_id))
-                return "NULL"
+            # if "<b>error occurred - </b>" in res.lower():
+            #     logging.error("No data for: " + str(case_id))
+            #     return "NULL"
 
             file_path = module_directory + "/../Data_Files/PDF_Files/" + court_name + "_" + slugify(case_id) + ".pdf"
             fw = open(file_path, "wb")
