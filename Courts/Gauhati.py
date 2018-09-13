@@ -106,13 +106,13 @@ def request_pdf(url, case_id, court_name):
         return "NULL"
 
 
-def parse_html(html_str, court_name):
+def parse_html(html_str, court_name, flag):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         soup = BeautifulSoup(str(soup.prettify()), "html.parser")
 
-        date_span = soup.find_all('span', {'class': 'MsoNormal'})[0]
-        month_year = str(date_span.decode_contents()).replace('JUDGMENTS FOR THE MONTH OF', '').strip()
+        date_h4 = soup.find_all('h4', {'align': 'center'})[0]
+        month_year = str(date_h4.text).replace('JUDGMENTS FOR THE MONTH OF', '').strip()
 
         table_list = soup.find_all('table', {'class': 'DISCOVERY3'})[0]
         table_soup = BeautifulSoup(str(table_list), "html.parser")
@@ -142,7 +142,10 @@ def parse_html(html_str, court_name):
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
 
-            i = 0
+            if flag:
+                i = 1
+            else:
+                i = 0
             for td in td_list:
                 i += 1
                 if i == 2:
@@ -229,8 +232,12 @@ def request_data(court_name, start_date, end_date_):
 
                 continue
 
-            if not parse_html(res, court_name):
-                logging.error("Failed to parse data from date: " + str(month_year))
+            if str(month_year[-2:]) == '10' or str(month_year) == 'Jan11':
+                if not parse_html(res, court_name, True):
+                    logging.error("Failed to parse data from date: " + str(month_year))
+            else:
+                if not parse_html(res, court_name, False):
+                    logging.error("Failed to parse data from date: " + str(month_year))
 
         return True
 
