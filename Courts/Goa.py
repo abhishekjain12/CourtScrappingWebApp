@@ -99,9 +99,10 @@ def parse_html(html_str, court_name, headers):
                 pdf_data = escape_string(request_pdf(case_no, court_name, pdf_value, headers))
 
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
-                                                               "judge, pdf_file, pdf_filename) VALUE ('" + case_no + \
-                            "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + judge + \
-                            "', '" + pdf_value + "', '" + court_name + "_" + slugify(case_no) + ".pdf')"
+                                                               "judge, pdf_file, pdf_filename, reportable) VALUE ('" + \
+                            case_no + "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + \
+                            judge + "', '" + pdf_value + "', '" + court_name + "_" + slugify(case_no) + ".pdf', '" + \
+                            reportable + "')"
                 insert_query(sql_query)
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
