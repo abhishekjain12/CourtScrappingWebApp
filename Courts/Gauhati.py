@@ -20,7 +20,7 @@ from Utils.db import insert_query, update_query, select_one_query, update_histor
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
-base_url = "http://ghcitanagar.gov.in/GHCITA/"
+base_url = "http://ghconline.gov.in/"
 
 
 def month_list_(dates):
@@ -29,8 +29,43 @@ def month_list_(dates):
     m_list = []
     for tot_m in range(total_months(start) - 1, total_months(end)):
         y, m = divmod(tot_m, 12)
-        m_list.append(datetime(y, m + 1, 1).strftime("%b%y").lower())
+        m_list.append(datetime(y, m + 1, 1).strftime("%b%y"))
     return m_list
+
+
+def date_fix(month_year):
+    if str(month_year[:-2]) == 'Jul':
+        month_year = 'July' + str(month_year[-2:])
+
+    if str(month_year[:-2]) == 'Apr':
+        if str(month_year[-2:]) == '10':
+            month_year = 'Appr' + str(month_year[-2:])
+
+    if str(month_year[:-2]) == 'Jun':
+        if str(month_year[-2:]) == '11' or str(month_year[-2:]) == '12' or str(month_year[-2:]) == '13' or \
+                str(month_year[-2:]) == '16' or str(month_year[-2:]) == '17':
+            month_year = 'June' + str(month_year[-2:])
+
+    if str(month_year[:-2]) == 'Aug':
+        if str(month_year[-2:]) == '11' or str(month_year[-2:]) == '10':
+            month_year = 'August' + str(month_year[-2:])
+
+    if str(month_year[:-2]) == 'Sep':
+        if str(month_year[-2:]) == '12' or str(month_year[-2:]) == '14' or str(month_year[-2:]) == '15' or \
+                str(month_year[-2:]) == '16' or str(month_year[-2:]) == '17':
+            month_year = 'Sept' + str(month_year[-2:])
+        if str(month_year[-2:]) == '10':
+            month_year = 'September' + str(month_year[-2:])
+
+    if str(month_year[:-2]) == 'Oct':
+        if str(month_year[-2:]) == '11' or str(month_year[-2:]) == '10':
+            month_year = 'October' + str(month_year[-2:])
+
+    if str(month_year[:-2]) == 'Nov':
+        if str(month_year[-2:]) == '11' or str(month_year[-2:]) == '10':
+            month_year = 'November' + str(month_year[-2:])
+
+    return month_year
 
 
 def request_pdf(url, case_id, court_name):
@@ -71,12 +106,15 @@ def request_pdf(url, case_id, court_name):
         return "NULL"
 
 
-def parse_html(html_str, month_year, court_name):
+def parse_html(html_str, court_name):
     try:
-        soup = BeautifulSoup(html_str.replace("</a>", ""), "html.parser")
+        soup = BeautifulSoup(html_str, "html.parser")
         soup = BeautifulSoup(str(soup.prettify()), "html.parser")
 
-        table_list = soup.find_all('table', {'class': 'style41'})[0]
+        date_span = soup.find_all('span', {'class': 'MsoNormal'})[0]
+        month_year = str(date_span.decode_contents()).replace('JUDGMENTS FOR THE MONTH OF', '').strip()
+
+        table_list = soup.find_all('table', {'class': 'DISCOVERY3'})[0]
         table_soup = BeautifulSoup(str(table_list), "html.parser")
         tr_list = table_soup.find_all('tr')
 
@@ -88,7 +126,7 @@ def parse_html(html_str, month_year, court_name):
                     break
 
             tr_count += 1
-            if tr_count <= 5:
+            if tr_count <= 1:
                 continue
 
             case_no = "NULL"
@@ -102,39 +140,35 @@ def parse_html(html_str, month_year, court_name):
             insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
-            td_list = tr_soup.find_all('td', {'colspan': None})
+            td_list = tr_soup.find_all('td')
 
             i = 0
             for td in td_list:
                 i += 1
-                if i == 1:
-                    judgment_day = escape_string(str(td.decode_contents()))
-                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + "/" + str(month_year[:-2]) + "/" + \
-                                    str(month_year[-2:])
-
                 if i == 2:
+                    judgment_day = escape_string(str(td.decode_contents()))
+                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + ", " + month_year
+
+                if i == 3:
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     pdf_file = escape_string(str(base_url + a_tag.get('href')))
-                    case_no = escape_string(str(a_tag.text).replace("\n", ""))
+                    case_no = escape_string(str(a_tag.text).replace("\n", "").strip())
 
                     if select_count_query(str(court_name), str(case_no)):
                         insert_check = True
-                        pdf_data = escape_string(request_pdf(pdf_file, case_no, court_name))
-
-                if i == 3:
-                    party = str(td.decode_contents()).split("<br/>")
-                    petitioner = escape_string(str(party[0]).replace("<strong>", "").replace("</strong>", ""))
-                    respondent = escape_string(str(party[2]).replace("<strong>", "").replace("</strong>", ""))
+                        pdf_data = escape_string(request_pdf(str(base_url + a_tag.get('href')), case_no, court_name))
 
                 if i == 4:
-                    subject = escape_string(str(td.decode_contents()))
+                    span_tag = BeautifulSoup(str(td), "html.parser").font.span
+                    party = str(span_tag.decode_contents()).split("<br/>")
+                    petitioner = escape_string(str(party[0]).strip())
+                    respondent = escape_string(str(party[2]).strip())
 
                 if i == 5:
-                    p_tag = BeautifulSoup(str(td), "html.parser").p
-                    if p_tag is not None:
-                        judge_name = escape_string(str(p_tag.decode_contents()))
-                    else:
-                        judge_name = escape_string(str(td.decode_contents()))
+                    subject = escape_string(str(td.decode_contents()).strip())
+
+                if i == 6:
+                    judge_name = escape_string(str(td.decode_contents()).strip())
 
             if case_no != "NULL" and insert_check and td_list:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
@@ -163,25 +197,22 @@ def request_data(court_name, start_date, end_date_):
             'Cache-Control': "no-cache",
         }
 
-        if int(start_date[-2:]) < 8:
+        if int(start_date[-2:]) < 10:
             update_query("UPDATE Tracker SET status = 'IN_NO_DATA_FOUND', emergency_exit=true WHERE Name = '" +
                          str(court_name) + "'")
-            if int(end_date_[-2:]) < 8:
+            if int(end_date_[-2:]) < 10:
                 update_history_tracker(court_name)
                 return True
 
         for month_year in month_list_([str(start_date), str(end_date_)]):
-            if str(month_year[:-2]) == 'apr':
-                month_year = 'april' + str(month_year[-2:])
-            if str(month_year[:-2]) == 'sep':
-                month_year = 'sept' + str(month_year[-2:])
+            month_year = date_fix(month_year)
 
             emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
             if emergency_exit['emergency_exit'] == 1:
                 update_history_tracker(court_name)
                 return True
 
-            url = base_url + "ghci_" + str(month_year) + ".html"
+            url = base_url + "JDMT" + str(month_year) + ".html"
 
             update_query("UPDATE Tracker SET Start_Date = '" + str(month_year) + "', End_Date = '" + str(end_date_) +
                          "' WHERE Name = '" + str(court_name) + "'")
@@ -198,7 +229,7 @@ def request_data(court_name, start_date, end_date_):
 
                 continue
 
-            if not parse_html(res, month_year, court_name):
+            if not parse_html(res, court_name):
                 logging.error("Failed to parse data from date: " + str(month_year))
 
         return True
@@ -212,5 +243,5 @@ def request_data(court_name, start_date, end_date_):
 
 
 def main(court_name, start_date, end_date):
-    logs.initialize_logger("ARUNACHAL")
+    logs.initialize_logger("Gauhati")
     return request_data(court_name, start_date, end_date)
