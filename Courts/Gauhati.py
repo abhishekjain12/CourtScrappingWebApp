@@ -167,6 +167,8 @@ def parse_html(html_str, court_name, flag):
                         span_tag = font_tag.span
                     else:
                         span_tag = BeautifulSoup(str(td), "html.parser").span
+                        if span_tag is None:
+                            span_tag = BeautifulSoup(str(td), "html.parser")
 
                     party = str(span_tag.decode_contents()).split("<br/>")
                     petitioner = escape_string(str(party[0]).strip())
