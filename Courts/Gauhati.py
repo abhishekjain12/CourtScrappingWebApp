@@ -181,7 +181,8 @@ def parse_html(html_str, court_name, flag):
                     subject = escape_string(str(td.decode_contents()).strip())
 
                 if i == 6:
-                    judge_name = escape_string(str(td.decode_contents()).strip())
+                    judge_name = escape_string(str(td.decode_contents()).replace('\\xC2\\x92BLE', '').strip())
+                    judge_name = judge_name.decode('utf8').encode('ascii', errors='ignore')
 
             if case_no != "NULL" and insert_check and td_list:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
