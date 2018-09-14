@@ -150,7 +150,8 @@ def parse_html(html_str, court_name, flag):
                 i += 1
                 if i == 2:
                     judgment_day = escape_string(str(td.decode_contents()))
-                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + ", " + month_year
+                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + ", " + \
+                                    month_year.replace('JUDGEMENTS FOR THE MONTH OF', '')
 
                 if i == 3:
                     a_tag = BeautifulSoup(str(td), "html.parser").a
@@ -171,8 +172,10 @@ def parse_html(html_str, court_name, flag):
                             span_tag = BeautifulSoup(str(td), "html.parser")
 
                     party = str(span_tag.decode_contents()).split("<br/>")
-                    petitioner = escape_string(str(party[0]).strip())
-                    respondent = escape_string(str(party[2]).strip())
+                    petitioner = escape_string(
+                        str(party[0]).replace('<td align="center" bgcolor="#FFFFFF" valign="middle" width="30%">',
+                                              '').strip())
+                    respondent = escape_string(str(party[2]).replace('</td>', '').strip())
 
                 if i == 5:
                     subject = escape_string(str(td.decode_contents()).strip())
