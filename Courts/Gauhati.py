@@ -181,7 +181,8 @@ def parse_html(html_str, court_name, flag):
                     subject = escape_string(str(td.decode_contents()).strip())
 
                 if i == 6:
-                    judge_name = escape_string(str(td.decode_contents()).replace(r'\x', '').strip())
+                    judge_name = escape_string(str(td.decode_contents()).replace(r'\x', '').replace('\\xC2\\x92BLE',
+                                                                                                    '').strip())
                     judge_name = re.sub(r'(\\x(.){2})', '', judge_name)
                     judge_name = re.sub(r'', '', judge_name, re.U)
 
