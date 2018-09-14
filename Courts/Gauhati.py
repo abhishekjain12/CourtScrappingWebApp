@@ -175,14 +175,16 @@ def parse_html(html_str, court_name, flag):
                     petitioner = escape_string(
                         str(party[0]).replace('<td align="center" bgcolor="#FFFFFF" valign="middle" width="30%">',
                                               '').strip())
+                    petitioner = re.sub(r'(\\x(.){2})', '', petitioner)
+
                     respondent = escape_string(str(party[2]).replace('</td>', '').strip())
+                    respondent = re.sub(r'(\\x(.){2})', '', respondent)
 
                 if i == 5:
                     subject = escape_string(str(td.decode_contents()).strip())
 
                 if i == 6:
-                    judge_name = escape_string(str(td.decode_contents()).replace(r'\x', '').replace('\\xC2\\x92BLE',
-                                                                                                    '').strip())
+                    judge_name = escape_string(str(td.text).replace(r'\x', '').replace('\\xC2\\x92BLE', '').strip())
                     judge_name = re.sub(r'(\\x(.){2})', '', judge_name)
                     judge_name = re.sub(r'', '', judge_name, re.U)
 
