@@ -187,12 +187,13 @@ def parse_html(html_str, court_name, flag):
 
             if case_no != "NULL" and insert_check and td_list:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
-                                                               "judge_name, subject, pdf_file, pdf_filename) VALUE ('"\
-                            + case_no + "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + \
-                            judge_name + "', '" + subject + "', '" + pdf_file + "', '" + court_name + "_" + \
-                            slugify(case_no) + ".pdf')"
+                                                               "subject, pdf_file, pdf_filename) VALUE ('" + case_no + \
+                            "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + subject + \
+                            "', '" + pdf_file + "', '" + court_name + "_" + slugify(case_no) + ".pdf')"
                 insert_query(sql_query)
 
+                update_query("UPDATE " + court_name + " SET judge_name = '" + str(judge_name) + "' WHERE case_no = '" +
+                             str(case_no) + "'")
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
                              str(case_no) + "'")
                 update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
