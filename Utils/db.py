@@ -164,6 +164,27 @@ def select_count_query(table_name, case_no):
         return False
 
 
+def select_count_query_other(table_name, col_name, value):
+    db = db_connect()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT count(" + str(col_name) + ") FROM " + str(table_name) + " WHERE " + str(col_name) +
+                       " = '" + str(value) + "'")
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        if not result[0]['count(' + str(col_name) + ')']:
+            return True
+        else:
+            return False
+
+    except Exception as e:
+        traceback.print_exc()
+        logging.error("Failed select count query: %s", e)
+        db.close()
+        return False
+
+
 def select_json_query(table_name, start_date, end_date):
     db = db_connect()
     try:
