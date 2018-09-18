@@ -235,4 +235,133 @@ metadata = [
         'o_date_format': '%d/%m/%Y',
         'bench': None,
     },
+    {
+        'court_name': "Income_Tax_Appellate",
+        'court_id': 8563,
+        'file_name': "Income_Tax_Appellate",
+        'date_format': '%d-%m-%Y',
+        'o_date_format': '%d/%m/%Y',
+        'bench': [
+            {
+                'id': 203,
+                'name': 'Agra'
+            },
+            {
+                'id': 205,
+                'name': 'Ahmedabad'
+            },
+            {
+                'id': 207,
+                'name': 'Allahabad'
+            },
+            {
+                'id': 209,
+                'name': 'Amritsar'
+            },
+            {
+                'id': 211,
+                'name': 'Bangalore'
+            },
+            {
+                'id': 213,
+                'name': 'Bilaspur'
+            },
+            {
+                'id': 215,
+                'name': 'Chandigarh'
+            },
+            {
+                'id': 217,
+                'name': 'Chennai'
+            },
+            {
+                'id': 219,
+                'name': 'Cochin'
+            },
+            {
+                'id': 221,
+                'name': 'Cuttack'
+            },
+            {
+                'id': 201,
+                'name': 'Delhi'
+            },
+            {
+                'id': 223,
+                'name': 'Guwahati'
+            },
+            {
+                'id': 225,
+                'name': 'Hyderabad'
+            },
+            {
+                'id': 227,
+                'name': 'Indore'
+            },
+            {
+                'id': 229,
+                'name': 'Jabalpur'
+            },
+            {
+                'id': 231,
+                'name': 'Jaipur'
+            },
+            {
+                'id': 233,
+                'name': 'Jodhpur'
+            },
+            {
+                'id': 235,
+                'name': 'Kolkata'
+            },
+            {
+                'id': 237,
+                'name': 'Lucknow'
+            },
+            {
+                'id': 199,
+                'name': 'Mumbai'
+            },
+            {
+                'id': 239,
+                'name': 'Nagpur'
+            },
+            {
+                'id': 241,
+                'name': 'Panaji'
+            },
+            {
+                'id': 243,
+                'name': 'Patna'
+            },
+            {
+                'id': 245,
+                'name': 'Pune'
+            },
+            {
+                'id': 247,
+                'name': 'Raipur'
+            },
+            {
+                'id': 249,
+                'name': 'Rajkot'
+            },
+            {
+                'id': 251,
+                'name': 'Ranchi'
+            },
+            {
+                'id': 256,
+                'name': 'Surat'
+            },
+            {
+                'id': 258,
+                'name': 'Varanasi'
+            },
+            {
+                'id': 253,
+                'name': 'Visakhapatnam'
+            },
+        ],
+    },
 ]

@@ -2,6 +2,7 @@ import datetime
 
 from Courts import Manipur, judis, lobis, Bombay, Calcutta, Karnataka, Arunachal_Pradesh, Himachal_Pradesh, \
     Madhya_Pradesh, Mizoram, Nagaland, Punjab_Haryana, Sikkim, Supreme_Court, Goa, Gauhati
+from Tribunals import Income_Tax_Appellate
 from Utils.CourtMetaData import metadata
 
 
@@ -80,6 +81,14 @@ def court_controller(court_name, bench, start_date, end_date):
 
         if str(code_file) == 'Gauhati':
             return Gauhati.main(court_name, start_date, end_date)
+
+        # ----------------------------------------------------------------TRIBUNALS
+
+        if str(code_file) == 'Income_Tax_Appellate':
+            if bench_list is not None:
+                for bench_ in bench_list:
+                    if bench_['id'] == bench:
+                        return Income_Tax_Appellate.main(court_name, bench)
 
     else:
         return False
