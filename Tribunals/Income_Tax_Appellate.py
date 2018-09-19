@@ -59,9 +59,10 @@ def request_pdf(url, case_id, court_name):
         return "NULL"
 
 
-def details_parse(url):
+def details_parse(url, appeal_no, court_name):
     date_of_order = 'NULL'
     pdf_file = 'NULL'
+    order_type = 'NULL'
 
     try:
         response = requests.request("GET", url, verify=False, proxies=proxy_dict)
@@ -72,6 +73,8 @@ def details_parse(url):
                 logging.error("No data for: " + str(url))
                 return "NULL"
 
+            full_details_parse(res, appeal_no, court_name)
+
             soup = BeautifulSoup(res, "html.parser")
             table_list = soup.find_all('section', {'class': None})
             table_soup = BeautifulSoup(str(table_list), "html.parser")
@@ -80,6 +83,8 @@ def details_parse(url):
             i = 0
             for td in td_list:
                 i += 1
+                if i == 1:
+                    order_type = escape_string(str(td.text).strip().replace("\n", ""))
                 if i == 2:
                     date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
                 if i == 6:
@@ -89,11 +94,112 @@ def details_parse(url):
         else:
             logging.error("Failed to get text file for: " + str(url))
 
-        return date_of_order, pdf_file
+        return date_of_order, pdf_file, order_type
 
     except Exception as e:
         logging.error("Failed to parse the details html: %s", e)
-        return date_of_order, pdf_file
+        return date_of_order, pdf_file, order_type
+
+
+def full_details_parse(res, appeal_no, court_name):
+    try:
+        filed_on = 'NULL'
+        assessment_year = 'NULL'
+        bench_allotted = 'NULL'
+        case_status = 'NULL'
+        date_of_first_hearing = 'NULL'
+        date_of_last_hearing = 'NULL'
+        date_of_next_hearing = 'NULL'
+        date_of_final_hearing = 'NULL'
+        date_of_tribunal_order = 'NULL'
+        date_of_pronouncement = 'NULL'
+        order_result = 'NULL'
+
+        soup = BeautifulSoup(res, "html.parser")
+        table_list = soup.find_all('table', {'class': 'table table-striped table-bordered manage-efects'})
+        table_soup = BeautifulSoup(str(table_list), "html.parser")
+        tr_list = table_soup.find_all('tr')
+
+        tr_count = 0
+        for tr in tr_list:
+            tr_count += 1
+            if tr_count != 5:
+                continue
+
+            tr_soup = BeautifulSoup(str(tr), "html.parser")
+            td_list = tr_soup.find_all('td')
+
+            i = 0
+            for td in td_list:
+                i += 1
+                if i == 2:
+                    filed_on = escape_string(str(td.text).strip().replace("\n", ""))
+                if i == 3:
+                    assessment_year = escape_string(str(td.text).strip().replace("\n", ""))
+                if i == 4:
+                    bench_allotted = escape_string(str(td.text).strip().replace("\n", ""))
+                if i == 5:
+                    case_status = escape_string(str(td.text).strip().replace("\n", ""))
+
+        soup = BeautifulSoup(res, "html.parser")
+        table_list = soup.find_all('section', {'id': 'panel2-3'})
+        table_soup = BeautifulSoup(str(table_list), "html.parser")
+        tr_list = table_soup.find_all('tr')
+
+        tr_count = 0
+        for tr in tr_list:
+            tr_count += 1
+            if tr_count == 1:
+                continue
+
+            tr_soup = BeautifulSoup(str(tr), "html.parser")
+            td_list = tr_soup.find_all('td')
+
+            if tr_count == 2:
+                i = 0
+                for td in td_list:
+                    i += 1
+                    if i == 1:
+                        date_of_first_hearing = escape_string(str(td.text).strip().replace("\n", ""))
+                    if i == 2:
+                        date_of_tribunal_order = escape_string(str(td.text).strip().replace("\n", ""))
+
+            if tr_count == 3:
+                i = 0
+                for td in td_list:
+                    i += 1
+                    if i == 1:
+                        date_of_last_hearing = escape_string(str(td.text).strip().replace("\n", ""))
+                    if i == 2:
+                        date_of_pronouncement = escape_string(str(td.text).strip().replace("\n", ""))
+
+            if tr_count == 4:
+                i = 0
+                for td in td_list:
+                    i += 1
+                    if i == 1:
+                        date_of_next_hearing = escape_string(str(td.text).strip().replace("\n", ""))
+                    if i == 2:
+                        order_result = escape_string(str(td.text).strip().replace("\n", ""))
+
+            if tr_count == 5:
+                i = 0
+                for td in td_list:
+                    i += 1
+                    if i == 1:
+                        date_of_final_hearing = escape_string(str(td.text).strip().replace("\n", ""))
+
+        update_query("UPDATE " + court_name + " SET filed_on = '" + str(filed_on) + "', assessment_year = '" +
+                     str(assessment_year) + "', bench_allotted = '" + str(bench_allotted) + "', case_status = '" +
+                     str(case_status) + "', date_of_first_hearing = '" +
+                     str(date_of_first_hearing) + "', date_of_last_hearing = '" + str(date_of_last_hearing) +
+                     "', date_of_next_hearing = '" + str(date_of_next_hearing) + "', date_of_final_hearing = '" +
+                     str(date_of_final_hearing) + "', date_of_tribunal_order = '" + str(date_of_tribunal_order) +
+                     "', date_of_pronouncement = '" + str(date_of_pronouncement) + "', order_result = '" +
+                     str(order_result) + "' WHERE appeal_no = '" + str(appeal_no) + "'")
+
+    except Exception as e:
+        logging.error("Failed to parse the details html: %s", e)
 
 
 def parse_html(html_str, court_name, bench):
@@ -122,6 +228,7 @@ def parse_html(html_str, court_name, bench):
             filed_by = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
+            order_type = "NULL"
             insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
@@ -148,16 +255,17 @@ def parse_html(html_str, court_name, bench):
                     if i == 5:
                         a_tag = BeautifulSoup(str(td), "html.parser").a
                         details_url = a_tag.get('href')
-                        date_of_order, pdf_file = details_parse(details_url)
+                        date_of_order, pdf_file, order_type = details_parse(details_url, appeal_no, court_name)
 
                         pdf_data = escape_string(request_pdf(pdf_file, appeal_no, court_name))
 
             if appeal_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (appeal_no, appellant, respondent, date_of_order, " \
-                                                               "filed_by, pdf_file, bench_code, pdf_filename) VALUE"\
-                                                               " ('" + appeal_no + "', '" + appellant + "', '" + \
-                            respondent + "', '" + date_of_order + "', '" + filed_by + "', '" + pdf_file + "', " + \
-                            str(bench) + ", '" + court_name + "_" + slugify(appeal_no) + ".pdf')"
+                                                               "filed_by, pdf_file, bench_code, pdf_filename, " \
+                                                               "order_type) VALUE ('" + appeal_no + "', '" + \
+                            appellant + "', '" + respondent + "', '" + date_of_order + "', '" + filed_by + "', '" + \
+                            pdf_file + "', " + str(bench) + ", '" + court_name + "_" + slugify(appeal_no) + \
+                            ".pdf', '" + str(order_type) + "')"
                 insert_query(sql_query)
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE appeal_no = '" +
