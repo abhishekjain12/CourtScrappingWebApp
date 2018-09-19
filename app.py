@@ -59,7 +59,7 @@ def start_scrap():
     update_query("UPDATE Tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     update_query("UPDATE Tracker SET status='IN_RUNNING', emergency_exit=false, No_Cases=0, No_Year_NoData=0, "
                  "No_Year_Error=0, No_Error=0, Start_Date='" + start_date + "', End_Date='" +
-                 end_date + "' WHERE Name='" + court_name + "'")
+                 end_date + "', bench='" + str(bench) + "' WHERE Name='" + court_name + "'")
 
     res = court_controller(court_name, bench, start_date, end_date)
     update_query("UPDATE Tracker SET status = 'IN_BUCKET_TRANSFER' WHERE Name = '" + str(court_name) + "'")
