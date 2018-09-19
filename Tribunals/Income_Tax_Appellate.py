@@ -267,7 +267,7 @@ def parse_html(html_str, court_name, bench):
                 insert_query(sql_query)
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "', date_of_order ='" +
-                             date_of_order + "' pdf_file = '" + pdf_file + "' order_type = '" + order_type +
+                             date_of_order + "', pdf_file = '" + pdf_file + "', order_type = '" + order_type +
                              "' WHERE appeal_no = '" + str(appeal_no) + "'")
                 update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
