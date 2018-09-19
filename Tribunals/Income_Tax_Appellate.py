@@ -260,16 +260,15 @@ def parse_html(html_str, court_name, bench):
                         pdf_data = escape_string(request_pdf(pdf_file, appeal_no, court_name))
 
             if appeal_no != "NULL" and insert_check:
-                sql_query = "INSERT INTO " + str(court_name) + " (appeal_no, appellant, respondent, date_of_order, " \
-                                                               "filed_by, pdf_file, bench_code, pdf_filename, " \
-                                                               "order_type) VALUE ('" + appeal_no + "', '" + \
-                            appellant + "', '" + respondent + "', '" + date_of_order + "', '" + filed_by + "', '" + \
-                            pdf_file + "', " + str(bench) + ", '" + court_name + "_" + slugify(appeal_no) + \
-                            ".pdf', '" + str(order_type) + "')"
+                sql_query = "INSERT INTO " + str(court_name) + " (appeal_no, appellant, respondent, filed_by, " \
+                                                               "bench_code, pdf_filename ) VALUE ('" + appeal_no + \
+                            "', '" + appellant + "', '" + respondent + "', '" + filed_by + "', " + str(bench) + \
+                            ", '" + court_name + "_" + slugify(appeal_no) + ".pdf')"
                 insert_query(sql_query)
 
-                update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE appeal_no = '" +
-                             str(appeal_no) + "'")
+                update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "', date_of_order ='" +
+                             date_of_order + "' pdf_file = '" + pdf_file + "' order_type = '" + order_type +
+                             "' WHERE appeal_no = '" + str(appeal_no) + "'")
                 update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
