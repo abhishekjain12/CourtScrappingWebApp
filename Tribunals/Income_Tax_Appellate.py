@@ -89,7 +89,8 @@ def details_parse(url, appeal_no, court_name):
                     date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
                 if i == 6:
                     a_tag = BeautifulSoup(str(td), "html.parser").a
-                    pdf_file = a_tag.get('href')
+                    if a_tag is not None:
+                        pdf_file = a_tag.get('href')
 
         else:
             logging.error("Failed to get text file for: " + str(url))
@@ -257,7 +258,7 @@ def parse_html(html_str, court_name, bench):
                         details_url = a_tag.get('href')
                         date_of_order, pdf_file, order_type = details_parse(details_url, appeal_no, court_name)
 
-                        pdf_data = escape_string(request_pdf(pdf_file, appeal_no, court_name))
+                        pdf_data = escape_string(str(request_pdf(pdf_file, appeal_no, court_name)).replace("'", ""))
 
             if appeal_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (appeal_no, appellant, respondent, filed_by, " \
