@@ -28,7 +28,8 @@ def request_pdf(auth, case_id, court_name, headers):
     payload = "vercode=" + str(vercode) + \
               "&submit=Submit"
 
-    response = requests.request("POST", url, data=payload, headers=headers, params=querystring, proxies=proxy_dict)
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring, verify=False,
+                                proxies=proxy_dict)
 
     if response.status_code == 200:
         res = response.text
@@ -172,7 +173,7 @@ def offset_link(html_str, headers, court_name):
                 break
 
             if page_link != "https://phhc.gov.in./home.php?search_param=free_text_search_judgment&page_no=1":
-                response = requests.request("POST", page_link, headers=headers, proxies=proxy_dict)
+                response = requests.request("POST", page_link, headers=headers, verify=False, proxies=proxy_dict)
                 res = response.text
 
                 if not parse_html(res, court_name, headers):
@@ -220,7 +221,7 @@ def request_data(court_name, headers, start_date, end_date_):
                       "&res_name=" \
                       "&free_text=Justice"
 
-            response = requests.request("POST", url, data=payload, headers=headers, params=querystring,
+            response = requests.request("POST", url, data=payload, headers=headers, params=querystring, verify=False,
                                         proxies=proxy_dict)
             res = response.text
 
