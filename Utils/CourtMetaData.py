@@ -239,7 +239,7 @@ metadata = [
         'court_name': "Income_Tax_Appellate",
         'court_id': 8563,
         'file_name': "Income_Tax_Appellate",
-        'date_format': '%d-%m-%Y',
+        'date_format': '%d/%m/%Y',
         'o_date_format': '%d/%m/%Y',
         'bench': [
             {

@@ -88,8 +88,7 @@ def court_controller(court_name, bench, start_date, end_date):
             if bench_list is not None:
                 for bench_ in bench_list:
                     if bench_['id'] == int(bench):
-                        print('HERE')
-                        return Income_Tax_Appellate.main(court_name, bench)
+                        return Income_Tax_Appellate.main(court_name, bench, start_date, end_date)
 
     else:
         return False

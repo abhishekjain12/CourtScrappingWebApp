@@ -1,3 +1,4 @@
+import datetime
 import os
 import requests
 import traceback
@@ -280,34 +281,56 @@ def parse_html(html_str, court_name, bench):
         return False
 
 
-def request_data(court_name, bench):
+def request_data(court_name, bench, start_date, end_date_):
     try:
         url = base_url + "/tribunalorders"
         headers = {
             'Content-Type': "application/x-www-form-urlencoded",
             'Cache-Control': "no-cache"
         }
+        i = 0
+        while True:
+            i += 1
 
-        emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
-        if emergency_exit['emergency_exit'] == 1:
-            update_history_tracker(court_name)
-            return True
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            if emergency_exit['emergency_exit'] == 1:
+                update_history_tracker(court_name)
+                return True
 
-        update_query("UPDATE Tracker SET Start_Date = '0', End_Date = '0' WHERE Name = '" + str(court_name) + "'")
+            end_date = (datetime.datetime.strptime(str(start_date), "%d/%m/%Y") + datetime.timedelta(days=1)
+                        ).strftime("%d/%m/%Y")
 
-        payload = "bench=" + str(bench) + \
-                  "&appeal_type=&hearingdate=&pronouncementdate=&orderdate=&member=&assesseename="
+            if datetime.datetime.strptime(str(end_date_), "%d/%m/%Y") + datetime.timedelta(days=1) < \
+                    datetime.datetime.strptime(str(end_date), "%d/%m/%Y"):
+                logging.error("DONE")
+                break
 
-        response = requests.request("POST", url, data=payload, headers=headers, verify=False, proxies=proxy_dict)
-        res = response.text
+            update_query("UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" + str(end_date) +
+                         "' WHERE Name = '" + str(court_name) + "'")
 
-        if res is None:
-            logging.error("NO data Found.")
-            update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
-                         str(court_name) + "'")
+            payload = "bench=" + str(bench) + \
+                      "&appeal_type=" \
+                      "&hearingdate=" \
+                      "&pronouncementdate=" \
+                      "&orderdate=" + str(start_date) + \
+                      "&member=" \
+                      "&assesseename="
 
-        if not parse_html(res, court_name, bench):
-            logging.error("Failed to parse data from bench: " + str(bench))
+            response = requests.request("POST", url, data=payload, headers=headers, verify=False, proxies=proxy_dict)
+            res = response.text
+
+            if res is None:
+                logging.error("NO data Found.")
+                update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                             str(court_name) + "'")
+
+                start_date = end_date
+                continue
+
+            if not parse_html(res, court_name, bench):
+                logging.error("Failed to parse data from bench: " + str(bench))
+
+            start_date = end_date
 
         return True
 
@@ -318,6 +341,6 @@ def request_data(court_name, bench):
         return False
 
 
-def main(court_name, bench):
+def main(court_name, bench, start_date, end_date):
     logs.initialize_logger("Income_Tax_Appellate")
-    return request_data(court_name, bench)
+    return request_data(court_name, bench, start_date, end_date)

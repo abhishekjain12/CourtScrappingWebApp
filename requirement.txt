@@ -8,3 +8,4 @@ pysocks5
 google-cloud-storage
 oauth2client
 google-api-python-client
+pyopenssl
