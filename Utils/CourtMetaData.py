@@ -364,4 +364,49 @@ metadata = [
             },
         ],
     },
+    {
+        'court_name': "Customs_Excise_And_Service_Tax_Appellate_Tribunal",
+        'court_id': 78651,
+        'file_name': "Customs_Excise_And_Service_Tax_Appellate_Tribunal",
+        'date_format': '%d-%m-%Y',
+        'o_date_format': '%d/%m/%Y',
+        'bench': [
+            {
+                'id': 'Delhi',
+                'name': 'Delhi'
+            },
+            {
+                'id': 'Banglore',
+                'name': 'Bangalore'
+            },
+            {
+                'id': 'Chennai',
+                'name': 'Chennai'
+            },
+            {
+                'id': 'Mumbai',
+                'name': 'Mumbai'
+            },
+            {
+                'id': 'Hyderabad',
+                'name': 'Hyderabad'
+            },
+            {
+                'id': 'Chandigarh',
+                'name': 'Chandigarh'
+            },
+            {
+                'id': 'Kolkata',
+                'name': 'Kolkata'
+            },
+            {
+                'id': 'Allahabad',
+                'name': 'Allahabad'
+            },
+            {
+                'id': 'Ahmadabad',
+                'name': 'Ahmedabad'
+            },
+        ],
+    },
 ]
