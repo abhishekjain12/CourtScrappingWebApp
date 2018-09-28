@@ -368,7 +368,7 @@ metadata = [
         'court_name': "Customs_Excise_And_Service_Tax_Appellate_Tribunal",
         'court_id': 78651,
         'file_name': "Customs_Excise_And_Service_Tax_Appellate_Tribunal",
-        'date_format': '%d-%m-%Y',
+        'date_format': '%Y-%m-%d',
         'o_date_format': '%d/%m/%Y',
         'bench': [
             {
