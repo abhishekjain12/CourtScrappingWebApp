@@ -105,7 +105,7 @@ def parse_html(html_str, court_name, bench, child_url):
                         a_tag = BeautifulSoup(str(td), "html.parser").font.a
                         pdf_url = base_url + child_url + a_tag.get('href')
                         pdf_file = escape_string(pdf_url)
-                        # pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
+                        pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
 
                     if i == 4:
                         section = str(td.text)
