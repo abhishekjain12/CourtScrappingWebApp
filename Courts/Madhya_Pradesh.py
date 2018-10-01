@@ -205,29 +205,28 @@ def parse_html(html_str, court_name, bench):
         return False
 
 
-def request_data(court_name, headers, start_date_, end_date_):
+def request_data(court_name, headers, start_date, end_date_):
     try:
         url = base_url + '/php/hc/judgement/judgement_pro_all.php'
 
-        benches = ['IND', 'JBP', 'GWL']
-        for bench in benches:
-            start_date = start_date_
-            i = 0
-            while True:
-                i += 1
+        i = 0
+        while True:
+            i += 1
 
+            end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=1)
+                        ).strftime("%d-%m-%Y")
+
+            if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=1) < \
+                    datetime.datetime.strptime(str(end_date), "%d-%m-%Y"):
+                logging.error("END date Exceed.")
+                break
+
+            benches = ['IND', 'JBP', 'GWL']
+            for bench in benches:
                 emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
                 if emergency_exit['emergency_exit'] == 1:
                     update_history_tracker(court_name)
                     return True
-
-                end_date = (datetime.datetime.strptime(str(start_date), "%d-%m-%Y") + datetime.timedelta(days=1)
-                            ).strftime("%d-%m-%Y")
-
-                if datetime.datetime.strptime(str(end_date_), "%d-%m-%Y") + datetime.timedelta(days=1) < \
-                        datetime.datetime.strptime(str(end_date), "%d-%m-%Y"):
-                    logging.error("END date Exceed.")
-                    break
 
                 update_query("UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" +
                              str(end_date) + "' WHERE Name = '" + str(court_name) + "'")
@@ -267,13 +266,13 @@ def request_data(court_name, headers, start_date_, end_date_):
                 if not parse_html(res, court_name, bench):
                     logging.error("Failed to parse data from date: " + str(start_date))
 
-                start_date = end_date
+            start_date = end_date
 
         return True
 
     except Exception as e:
         traceback.print_exc()
-        logging.error("Failed to get data from date: " + str(start_date_))
+        logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
         return False
 
