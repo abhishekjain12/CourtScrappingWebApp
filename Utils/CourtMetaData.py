@@ -409,4 +409,29 @@ metadata = [
             },
         ],
     },
+    {
+        'court_name': "National_Company_Law_Tribunal",
+        'court_id': 7861,
+        'file_name': "National_Company_Law_Tribunal",
+        'date_format': '%Y',
+        'o_date_format': '%d/%m/%Y',
+        'bench': [
+            {
+                'id': 'Principal_Bench_New Delhi_Bench',
+                'name': 'Principal_Bench_New Delhi_Bench'
+            },
+            {
+                'id': 'Kolkata_Bench',
+                'name': 'Kolkata_Bench'
+            },
+            {
+                'id': 'Mumbai_Bench',
+                'name': 'Mumbai_Bench'
+            },
+            {
+                'id': 'Chennai_Bench',
+                'name': 'Chennai_Bench'
+            },
+        ],
+    },
 ]
