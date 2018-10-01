@@ -35,7 +35,7 @@ def month_list_(dates):
 
 def request_pdf(url, case_id, court_name):
     try:
-        response = requests.request("GET", url, proxies=proxy_dict)
+        response = requests.request("GET", url.replace('\/', '/'), proxies=proxy_dict)
         if response.status_code == 200:
             res = response.text
 
