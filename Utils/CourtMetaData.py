@@ -434,4 +434,12 @@ metadata = [
             },
         ],
     },
+    {
+        'court_name': "Appellate_Tribunal",
+        'court_id': 2224,
+        'file_name': "Appellate_Tribunal",
+        'date_format': '%m%Y',
+        'o_date_format': '%d-%m-%Y',
+        'bench': None,
+    },
 ]
