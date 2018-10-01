@@ -35,7 +35,7 @@ def month_list_(dates):
 
 def request_pdf(url, case_id, court_name):
     try:
-        response = requests.request("GET", url.replace('\/', '/'), proxies=proxy_dict)
+        response = requests.request("GET", url, proxies=proxy_dict)
         if response.status_code == 200:
             res = response.text
 
@@ -122,8 +122,9 @@ def parse_html(html_str, court_name, appeal_type):
 
                     if i == 5:
                         a_tag = BeautifulSoup(str(td), "html.parser").a
-                        pdf_file = escape_string(base_url + a_tag.get('href'))
-                        pdf_data = escape_string(request_pdf(base_url + a_tag.get('href'), case_no, court_name))
+                        pdf_url = str(base_url + a_tag.get('href')).replace('\\', '/')
+                        pdf_file = escape_string(pdf_url)
+                        pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
 
             if case_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, date_of_order, appellant, respondent, " \
