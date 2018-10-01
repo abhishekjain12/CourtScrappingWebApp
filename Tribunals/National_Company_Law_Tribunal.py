@@ -155,9 +155,6 @@ def request_data(court_name, bench, start_date, end_date_):
 
                 response = requests.request("GET", url, proxies=proxy_dict)
                 res = response.text
-                fw = open(module_directory + "/../Data_Files/Html_Files/" + court_name + "_" +
-                          str(start_date).replace("/", "-") + "_.html", "w")
-                fw.write(str(res))
 
                 if res is None:
                     logging.error("NO data Found for year: " + str(year))
