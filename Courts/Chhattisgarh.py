@@ -89,7 +89,7 @@ def parse_html(html_str, court_name):
                 insert_check = True
 
                 judgment_date = escape_string(mixed[-10:].replace('(', '').replace(')', ''))
-                # pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+                pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
                 pdf_file = escape_string(base_url + a_link)
 
             if case_no != "NULL" and insert_check:
