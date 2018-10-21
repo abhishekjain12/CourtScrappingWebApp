@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
 from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info, \
-    update_history_tracker
+    update_history_tracker, download_pdf_to_bucket
 from common import transfer_to_bucket, pdf_to_text_api
 
 app = Flask(__name__)
@@ -99,6 +99,28 @@ def running_scrap():
 def cancel_scrap(court_name):
     return jsonify(update1_query("UPDATE Tracker SET status='IN_ABORT', emergency_exit=true WHERE Name='" +
                                  court_name + "'"))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+@app.route('/start-pdf', methods=['POST'])
+def start_pdf():
+    court_name = request.form['court_name']
+    update_query("UPDATE Tracker_pdf SET status='IN_RUNNING', emergency_exit=false, Name='" + court_name +
+                 "', No_Files=0 WHERE 1")
+    download_pdf_to_bucket(court_name)
+    return '', 200
+
+
+@app.route('/current-pdf')
+def current_pdf():
+    return jsonify(select_one_query("SELECT Name, No_Files, status FROM Tracker_pdf LIMIT 1"))
+
+
+@app.route('/cancel-pdf')
+def cancel_pdf():
+    return jsonify(update_query("UPDATE Tracker_pdf SET status='IN_ABORT', emergency_exit=true WHERE 1"))
 
 
 # ----------------------------------------------------------------------------------------------------------------------

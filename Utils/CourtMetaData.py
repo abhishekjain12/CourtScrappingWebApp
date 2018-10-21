@@ -69,7 +69,7 @@ metadata = [
     {
         'court_name': "Chattisgarh",
         'court_id': 1,
-        'file_name': "judis",
+        'file_name': "Chhattisgarh",
         'date_format': '%d/%m/%Y',
         'o_date_format': '%d/%m/%Y',
         'bench': None,
@@ -117,17 +117,25 @@ metadata = [
     {
         'court_name': "Jammu_Srinagar",
         'court_id': 555,
-        'file_name': "judis",
+        'file_name': "Jammu_Srinagar",
         'date_format': '%d/%m/%Y',
         'o_date_format': '%d/%m/%Y',
         'bench': [
             {
                 'id': '3',
-                'name': 'Jammu'
+                'name': 'Jammu-judis'
             },
             {
                 'id': '4',
-                'name': 'Srinagar'
+                'name': 'Srinagar-judis'
+            },
+            {
+                'id': '1',
+                'name': 'Jammu-lobis'
+            },
+            {
+                'id': '2',
+                'name': 'Srinagar-lobis'
             },
         ],
     },

@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 import os
 import traceback
@@ -12,6 +14,8 @@ from io import StringIO
 from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
+
+from Courts import judis
 from Utils import logs
 from Utils.db import insert_query, update_query, update_history_tracker, select_one_query, select_count_query
 from Utils.my_proxy import proxy_dict
@@ -85,7 +89,7 @@ def parse_html(html_str, court_name):
                 insert_check = True
 
                 judgment_date = escape_string(mixed[-10:].replace('(', '').replace(')', ''))
-                pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+                # pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
                 pdf_file = escape_string(base_url + a_link)
 
             if case_no != "NULL" and insert_check:
@@ -156,4 +160,10 @@ def request_data(court_name, start_date, end_date_):
 
 def main(court_name, start_date, end_date):
     logs.initialize_logger("Chhattisgarh")
-    return request_data(court_name, start_date, end_date)
+
+    if int((datetime.datetime.strptime(str(start_date), "%d/%m/%Y")).strftime('%Y')) < 2012:
+        return judis.main(court_name, 1, start_date, end_date)
+    else:
+        start_date = (datetime.datetime.strptime(str(start_date), "%d/%m/%Y")).strftime('%Y')
+        end_date = (datetime.datetime.strptime(str(end_date), "%d/%m/%Y")).strftime('%Y')
+        return request_data(court_name, start_date, end_date)

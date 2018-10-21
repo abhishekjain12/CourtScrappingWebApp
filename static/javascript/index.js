@@ -1,5 +1,6 @@
 let s_interval;
 let j_interval;
+let pdf_interval;
 
 $(document).ready(function() {
 
@@ -20,6 +21,7 @@ $(document).ready(function() {
 
      running_s();
      running_j();
+     running_pdf();
 
      $('#court-name-s').on('change', function() {
          $.ajax({
@@ -200,6 +202,79 @@ $(document).ready(function() {
          });
      });
 
+
+     $('#submit-btn-pdf').on('click', function() {
+         if (validate_pdf()) {
+             const s_btn = $("#submit-btn-pdf");
+             const l_btn = $("#btn-loading-pdf");
+             const se_btn = $("#btn-send-pdf");
+
+             s_btn.addClass("disabled");
+             se_btn.addClass("d-none");
+             l_btn.addClass("loading-btn");
+
+             const court_name = $('#court-name-pdf').val();
+
+             $.ajax({
+                 type: 'POST',
+                 url: '/start-pdf',
+
+                 data: "court_name=" + court_name,
+                 success: function () {
+                     Materialize.toast("PDF Download started!", 2000, 'light-green');
+
+                 },
+                 error: function (data) {
+                 }
+             });
+
+             setTimeout(function () {
+                 current_pdf(court_name);
+                 l_btn.removeClass("loading-btn");
+                 se_btn.removeClass("d-none");
+                 s_btn.removeClass("disabled");
+                 s_btn.addClass("d-none");
+                 $('#cancel-btn-pdf').removeClass("d-none");
+             }, 2000);
+
+             pdf_interval = setInterval(function () {
+                             current_pdf(court_name);
+                         }, 10000);
+         }
+     });
+
+
+     $('#cancel-btn-pdf').on('click', function() {
+        const s_btn = $("#cancel-btn-pdf");
+        const l_btn = $("#btn-close-loading-pdf");
+        const se_btn = $("#btn-close-pdf");
+
+        s_btn.addClass("disabled");
+        se_btn.addClass("d-none");
+        l_btn.addClass("loading-btn");
+
+         $.ajax({
+            type: 'GET',
+            url: '/cancel-pdf',
+            success: function () {
+                Materialize.toast("PDF process Aborted!", 2000, 'light-green');
+                l_btn.removeClass("loading-btn");
+                se_btn.removeClass("d-none");
+                s_btn.removeClass("disabled");
+                s_btn.addClass("d-none");
+                $('#submit-btn-pdf').removeClass("d-none");
+            },
+            error: function (data) {
+                Materialize.toast('An error occurred!' + data, 2000, 'red');
+                l_btn.removeClass("loading-btn");
+                se_btn.removeClass("d-none");
+                s_btn.removeClass("disabled");
+                s_btn.addClass("d-none");
+                $('#submit-btn-pdf').removeClass("d-none");
+            }
+         });
+     });
+
 });
 
 function current_s(court_name) {
@@ -293,6 +368,53 @@ function current_j(court_name) {
                 }
             }
             $("#current-j").html(tr_list);
+
+        },
+        error: function (data) {
+            Materialize.toast('An error occurred!' + data, 2000, 'red');
+        }
+     });
+}
+
+
+function current_pdf(court_name) {
+     const s_btn = $("#submit-btn-pdf");
+     const l_btn = $("#btn-loading-pdf");
+     const se_btn = $("#btn-send-pdf");
+
+     $.ajax({
+        type: 'GET',
+        url: '/current-pdf',
+        success: function (data) {
+            let tr_list = "";
+
+            if (!data) {
+                tr_list += "<tr><td colspan=\"5\"><h6 class='center-align grey-text text-darken-2'>" +
+                    "No Process Running</h6></td></tr>";
+                l_btn.removeClass("loading-btn");
+                se_btn.removeClass("d-none");
+                s_btn.removeClass("disabled");
+                $('#cancel-btn-pdf').addClass("d-none");
+                s_btn.removeClass("d-none");
+                clearInterval(pdf_interval);
+            }
+            else {
+                tr_list += "<tr>";
+                tr_list += "<td id='current-court-pdf'>" + data.Name + "</td>";
+                tr_list += "<td>" + data.No_Files + "</td>";
+                tr_list += "<td>" + data.status + "</td>";
+                tr_list += "</tr>";
+
+                if ("IN_RUNNING" !== data.status){
+                    $('#cancel-btn-pdf').addClass("d-none");
+                    $('#submit-btn-pdf').removeClass("d-none");
+                    clearInterval(pdf_interval);
+                }
+                if ("IN_SUCCESS" === data.status){
+                    clearInterval(pdf_interval);
+                }
+            }
+            $("#current-pdf").html(tr_list);
 
         },
         error: function (data) {
@@ -430,6 +552,72 @@ function running_j() {
 }
 
 
+function running_pdf() {
+     const s_btn = $("#submit-btn-pdf");
+     const l_btn = $("#btn-loading-pdf");
+     const se_btn = $("#btn-send-pdf");
+
+     s_btn.addClass("disabled");
+     se_btn.addClass("d-none");
+     l_btn.addClass("loading-btn");
+
+     $.ajax({
+        type: 'GET',
+        url: '/current-pdf',
+        success: function (data) {
+            let tr_list = "";
+
+            if (!data) {
+                tr_list += "<tr><td colspan=\"5\"><h6 class='center-align grey-text text-darken-2'>" +
+                    "No Process Running</h6></td></tr>";
+                 l_btn.removeClass("loading-btn");
+                 se_btn.removeClass("d-none");
+                 s_btn.removeClass("disabled");
+                $('#cancel-btn-pdf').addClass("d-none");
+                s_btn.removeClass("d-none");
+                clearInterval(pdf_interval);
+            }
+            else {
+                tr_list += "<tr>";
+                tr_list += "<td id='current-court-pdf'>" + data.Name + "</td>";
+                tr_list += "<td>" + data.No_Files + "</td>";
+                tr_list += "<td>" + data.status + "</td>";
+                tr_list += "</tr>";
+
+                if ("IN_RUNNING" === data.status){
+                     l_btn.removeClass("loading-btn");
+                     se_btn.removeClass("d-none");
+                     s_btn.removeClass("disabled");
+                     s_btn.addClass("d-none");
+                     $('#cancel-btn-pdf').removeClass("d-none");
+                     pdf_interval = setInterval(function () {
+                                     current_pdf(data.Name);
+                                 }, 10000);
+                }
+                else {
+                    $('#cancel-btn-pdf').addClass("d-none");
+                    $('#submit-btn-pdf').removeClass("d-none");
+                    clearInterval(pdf_interval);
+                }
+                if ("IN_SUCCESS" === data.status || "IN_ABORT" === data.status){
+                    $('#cancel-btn-pdf').addClass("d-none");
+                    $('#submit-btn-pdf').removeClass("d-none");
+                    s_btn.removeClass("disabled");
+                    l_btn.removeClass("loading-btn");
+                    se_btn.removeClass("d-none");
+                    clearInterval(pdf_interval);
+                }
+            }
+            $("#current-pdf").html(tr_list);
+
+        },
+        error: function (data) {
+            Materialize.toast('An error occurred!' + data, 2000, 'red');
+        }
+     });
+}
+
+
 function get_files(court_name) {
     $.ajax({
         type: 'GET',
@@ -505,5 +693,16 @@ function validate_j() {
         return false;
     }
     else
+        return true;
+}
+
+
+function validate_pdf() {
+    const court_name = $('#court-name-pdf').val();
+
+    if (court_name === null || court_name.localeCompare("") === 0){
+        Materialize.toast('Please select court name.', 4000, 'red');
+        return false;
+    } else
         return true;
 }

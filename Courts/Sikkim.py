@@ -73,7 +73,7 @@ def request_pdf(url, case_id, court_name):
 
 def parse_html(html_str, court_name):
     try:
-        soup = BeautifulSoup(str(html_str), "html.parser")
+        soup = BeautifulSoup(str(html_str).replace('&', ' '), "html.parser")
         tr_list = soup.find_all('tr')
 
         tr_count = 0
