@@ -229,7 +229,7 @@ $(document).ready(function() {
              });
 
              setTimeout(function () {
-                 current_pdf(court_name);
+                 current_pdf();
                  l_btn.removeClass("loading-btn");
                  se_btn.removeClass("d-none");
                  s_btn.removeClass("disabled");
@@ -238,7 +238,7 @@ $(document).ready(function() {
              }, 2000);
 
              pdf_interval = setInterval(function () {
-                             current_pdf(court_name);
+                             current_pdf();
                          }, 10000);
          }
      });
@@ -377,7 +377,7 @@ function current_j(court_name) {
 }
 
 
-function current_pdf(court_name) {
+function current_pdf() {
      const s_btn = $("#submit-btn-pdf");
      const l_btn = $("#btn-loading-pdf");
      const se_btn = $("#btn-send-pdf");
@@ -408,6 +408,9 @@ function current_pdf(court_name) {
                 if ("IN_RUNNING" !== data.status){
                     $('#cancel-btn-pdf').addClass("d-none");
                     $('#submit-btn-pdf').removeClass("d-none");
+                    s_btn.removeClass("disabled");
+                    l_btn.removeClass("loading-btn");
+                    se_btn.removeClass("d-none");
                     clearInterval(pdf_interval);
                 }
                 if ("IN_SUCCESS" === data.status){
@@ -591,7 +594,7 @@ function running_pdf() {
                      s_btn.addClass("d-none");
                      $('#cancel-btn-pdf').removeClass("d-none");
                      pdf_interval = setInterval(function () {
-                                     current_pdf(data.Name);
+                                     current_pdf();
                                  }, 10000);
                 }
                 else {
