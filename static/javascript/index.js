@@ -600,9 +600,12 @@ function running_pdf() {
                 else {
                     $('#cancel-btn-pdf').addClass("d-none");
                     $('#submit-btn-pdf').removeClass("d-none");
+                    s_btn.removeClass("disabled");
+                    l_btn.removeClass("loading-btn");
+                    se_btn.removeClass("d-none");
                     clearInterval(pdf_interval);
                 }
-                if ("IN_SUCCESS" === data.status || "IN_ABORT" === data.status){
+                if ("IN_SUCCESS" === data.status || "IN_ABORT" === data.status || "IN_CANCELLED" === data.status){
                     $('#cancel-btn-pdf').addClass("d-none");
                     $('#submit-btn-pdf').removeClass("d-none");
                     s_btn.removeClass("disabled");
