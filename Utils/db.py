@@ -264,20 +264,21 @@ def download_pdf_to_bucket(table_name):
             for record in result:
                 filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + record['pdf_filename']
 
-                response = requests.request("GET", record['pdf_file'], proxies=proxy_dict)
-                if response.status_code == 200:
-                    res = response.text
-                    if "no data found" in res.lower():
-                        logging.error("No data for: " + str(record['pdf_filename']))
-                        return str("NULL")
-                    fw = open(filename, "wb")
-                    fw.write(response.content)
+                if str(record['pdf_file']) != 'NULL' or record['pdf_file'] is not None:
+                    response = requests.request("GET", record['pdf_file'], proxies=proxy_dict)
+                    if response.status_code == 200:
+                        res = response.text
+                        if "no data found" in res.lower():
+                            logging.error("No data for: " + str(record['pdf_filename']))
+                            return str("NULL")
+                        fw = open(filename, "wb")
+                        fw.write(response.content)
 
-                    if transfer_to_bucket('PDF_Files', filename):
-                        os.remove(filename)
+                        if transfer_to_bucket('PDF_Files', filename):
+                            os.remove(filename)
 
-                    update_query("UPDATE " + table_name + " SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
-                    update_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='" + table_name + "'")
+                        update_query("UPDATE " + table_name + " SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
+                        update_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='" + table_name + "'")
 
         update_query("UPDATE Tracker_pdf SET status='IN_SUCCESS', emergency_exit=true WHERE Name='" +
                      table_name + "'")
