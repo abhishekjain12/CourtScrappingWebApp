@@ -43,7 +43,7 @@ def request_pdf(url, case_id, court_name):
                 logging.error("No data for: " + str(case_id))
                 return "NULL"
 
-            file_path = module_directory + "/../Data_FIles/PDF_Files/" + court_name + "_" + slugify(case_id) + ".pdf"
+            file_path = module_directory + "/../Data_Files/PDF_Files/" + court_name + "_" + slugify(case_id) + ".pdf"
             fw = open(file_path, "wb")
             fw.write(response.content)
 
