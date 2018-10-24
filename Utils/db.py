@@ -264,7 +264,7 @@ def download_pdf_to_bucket(table_name):
             for record in result:
                 filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + record['pdf_filename']
 
-                if str(record['pdf_file']) != 'NULL' or record['pdf_file'] is not None:
+                if str(record['pdf_file']).upper() != 'NULL' or record['pdf_file'] is not None:
                     response = requests.request("GET", record['pdf_file'], proxies=proxy_dict)
                     if response.status_code == 200:
                         res = response.text
