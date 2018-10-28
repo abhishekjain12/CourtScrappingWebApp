@@ -266,7 +266,7 @@ def download_pdf_to_bucket(table_name):
             cursor.close()
 
             for record in result:
-                if str(record['pdf_file']).upper() != 'NULL' or record['pdf_file'] is not None:
+                if str(record['pdf_file']).upper() != 'NULL' and record['pdf_file'] is not None:
                     filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + \
                                str(record['pdf_filename'])
                     logging.error("In pdf link is there")
