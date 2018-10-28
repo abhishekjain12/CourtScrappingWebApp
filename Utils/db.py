@@ -246,7 +246,6 @@ def download_pdf_to_bucket(table_name):
     from Utils import logs
     logs.initialize_logger("PDF")
     db = db_connect()
-    logging.error("In function")
 
     try:
         cursor = db.cursor()
@@ -254,27 +253,22 @@ def download_pdf_to_bucket(table_name):
         result = cursor.fetchall()
         cursor.close()
         no_rows = result[0]['num_rows']
-        logging.error("Rows selected")
 
         no_of_data_per_iteration = 5000
         no_of_iteration = floor(int(no_rows) / no_of_data_per_iteration) + 1
 
         for i in range(0, no_of_iteration):
-            logging.error("In for iteration loop")
             cursor = db.cursor()
             cursor.execute("SELECT id, case_no, pdf_file, pdf_filename FROM " + str(table_name) +
                            " WHERE is_pdf=0 LIMIT " + str(no_of_data_per_iteration) + " OFFSET " +
                            str(i * no_of_data_per_iteration))
             result = cursor.fetchall()
             cursor.close()
-            logging.error("In pdf link select query")
 
             for record in result:
-                logging.error("In for result loop")
-
-                filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + record['pdf_filename']
-
                 if str(record['pdf_file']).upper() != 'NULL' or record['pdf_file'] is not None:
+                    filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + \
+                               str(record['pdf_filename'])
                     logging.error("In pdf link is there")
 
                     response = requests.request("GET", record['pdf_file'], proxies=proxy_dict)
