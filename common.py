@@ -3,6 +3,7 @@
 # fw.write(str(res))
 import logging
 import traceback
+import pymysql.cursors
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -12,6 +13,7 @@ from io import StringIO
 
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
+from slugify import slugify
 
 
 def transfer_to_bucket(folder_name, filename):
@@ -50,3 +52,28 @@ def pdf_to_text_api(file_path):
         traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
         return "FAILED"
+
+
+def court_pdfname(court_name):
+    try:
+        db = pymysql.connect(host="localhost", user="root", password="root", db="Courts_Data",
+                             cursorclass=pymysql.cursors.DictCursor)
+        while True:
+            cursor = db.cursor()
+            cursor.execute("SELECT case_no FROM " + court_name + " WHERE pdf_filename IS NULL LIMIT 1")
+            result = cursor.fetchone()
+
+            if result is None:
+                cursor.close()
+                db.close()
+                return 'Done'
+            else:
+                sql = "UPDATE " + court_name + " SET pdf_filename = '" + court_name + "_" + \
+                      slugify(result['case_no']) + ".pdf' WHERE case_no = '" + str(result['case_no']) + "'"
+                cursor = db.cursor()
+                cursor.execute(sql)
+                db.commit()
+
+    except Exception as e:
+        print(e)
+        return False
