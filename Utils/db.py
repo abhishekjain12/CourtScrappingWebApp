@@ -242,11 +242,7 @@ def select_json_query(table_name, start_date, end_date):
 
 
 def download_pdf_to_bucket(table_name):
-
-    from Utils import logs
-    logs.initialize_logger("PDF")
     db = db_connect()
-
     try:
         cursor = db.cursor()
         cursor.execute("select count(id) as num_rows from " + str(table_name) + " WHERE is_pdf=0")
@@ -269,12 +265,9 @@ def download_pdf_to_bucket(table_name):
                 if str(record['pdf_file']).upper() != 'NULL' and record['pdf_file'] is not None:
                     filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + \
                                str(record['pdf_filename'])
-                    logging.error("In pdf link is there")
 
-                    response = requests.request("GET", record['pdf_file'], proxies=proxy_dict)
+                    response = requests.request("GET", str(record['pdf_file']), proxies=proxy_dict)
                     if response.status_code == 200:
-                        logging.error("In pdf recevied")
-
                         res = response.text
                         if "no data found" in res.lower():
                             logging.error("No data for: " + str(record['pdf_filename']))
@@ -283,8 +276,6 @@ def download_pdf_to_bucket(table_name):
                         fw.write(response.content)
 
                         if transfer_to_bucket('PDF_Files', filename):
-                            logging.error("In transfer to bucket")
-
                             os.remove(filename)
 
                         update_query("UPDATE " + table_name + " SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
@@ -293,15 +284,12 @@ def download_pdf_to_bucket(table_name):
         update_query("UPDATE Tracker_pdf SET status='IN_SUCCESS', emergency_exit=true WHERE Name='" +
                      table_name + "'")
         db.close()
-
         return True
 
     except Exception as e:
-        logging.error("In Error %s", e)
-
+        logging.error("Failed download_pdf_to_bucket: %s", e)
         update_query("UPDATE Tracker_pdf SET status='IN_FAILED', emergency_exit=true WHERE Name='" +
                      table_name + "'")
         traceback.print_exc()
-        logging.error("Failed download_pdf_to_bucket: %s", e)
         db.close()
         return False
