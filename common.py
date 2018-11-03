@@ -76,4 +76,5 @@ def court_pdfname(court_name):
 
     except Exception as e:
         print(e)
+        logging.error("PDF FIlename Error: %s", e)
         return False

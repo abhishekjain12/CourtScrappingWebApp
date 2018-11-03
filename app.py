@@ -7,6 +7,7 @@ from random import randint
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 
+from Utils import logs
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
 from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info, \
@@ -106,6 +107,7 @@ def cancel_scrap(court_name):
 
 @app.route('/start-pdf', methods=['POST'])
 def start_pdf():
+    logs.initialize_logger("PDF")
     court_name = request.form['court_name']
     update_query("UPDATE Tracker_pdf SET status='IN_RUNNING', emergency_exit=false, Name='" + court_name +
                  "', No_Files=0 WHERE 1")
