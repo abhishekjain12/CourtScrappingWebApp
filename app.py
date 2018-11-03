@@ -11,7 +11,7 @@ from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
 from Utils.db import select_query, select_one_query, update_query, select_json_query, update1_query, get_tables_info, \
     update_history_tracker, download_pdf_to_bucket
-from common import transfer_to_bucket, pdf_to_text_api
+from common import transfer_to_bucket, pdf_to_text_api, court_pdfname
 
 app = Flask(__name__)
 module_directory = os.path.dirname(__file__)
@@ -109,6 +109,7 @@ def start_pdf():
     court_name = request.form['court_name']
     update_query("UPDATE Tracker_pdf SET status='IN_RUNNING', emergency_exit=false, Name='" + court_name +
                  "', No_Files=0 WHERE 1")
+    court_pdfname(court_name)
     download_pdf_to_bucket(court_name)
     return '', 200
 

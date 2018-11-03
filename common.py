@@ -56,7 +56,7 @@ def pdf_to_text_api(file_path):
 
 def court_pdfname(court_name):
     try:
-        db = pymysql.connect(host="localhost", user="root", password="root", db="Courts_Data",
+        db = pymysql.connect(host="localhost", user="root", password="krypton212", db="Courts_Data",
                              cursorclass=pymysql.cursors.DictCursor)
         while True:
             cursor = db.cursor()
