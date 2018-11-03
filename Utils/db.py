@@ -7,7 +7,6 @@ import pymysql.cursors
 from math import floor
 
 import requests
-from slugify import slugify
 
 from Utils.my_proxy import proxy_dict
 from common import transfer_to_bucket
@@ -264,8 +263,8 @@ def download_pdf_to_bucket(table_name):
 
             for record in result:
                 if str(record['pdf_file']).upper() != 'NULL' and record['pdf_file'] is not None:
-                    filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + table_name + "_" + \
-                               slugify(result['case_no']) + ".pdf"
+                    filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + \
+                               str(record['pdf_filename'])
 
                     response = requests.request("GET", str(record['pdf_file']), proxies=proxy_dict)
                     if response.status_code == 200:
