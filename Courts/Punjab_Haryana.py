@@ -1,5 +1,7 @@
 import datetime
 import os
+from time import sleep
+
 import requests
 import traceback
 import logging
@@ -229,6 +231,7 @@ def request_data(court_name, headers, start_date, end_date_):
                 logging.error("NO data Found for start date: " + str(start_date))
                 update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
                              str(court_name) + "'")
+                sleep(2)
 
                 start_date = end_date
                 continue

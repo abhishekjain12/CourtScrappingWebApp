@@ -1,3 +1,5 @@
+from time import sleep
+
 import requests
 import datetime
 import os
@@ -14,7 +16,7 @@ from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
 from Utils import logs
-from Utils.db import insert_query, update_query, select_one_query, update_history_tracker, select_count_query
+from Utils.db import insert_query, update_query, select_one_query, update_history_tracker, select_count_query_bench
 from Utils.my_proxy import proxy_dict
 
 
@@ -113,7 +115,7 @@ def parse_html(html_str, court_name, bench):
                         judgment_date = escape_string(td_text.replace("Judgement", "").replace("Orders", "")
                                                       .replace("r", "").replace("(AFR)", "").replace("NA", "").strip())
 
-            if select_count_query(str(court_name), str(case_no)):
+            if select_count_query_bench(str(court_name), str(case_no), bench):
                 insert_check = True
 
             if tr_count == 2:
@@ -259,6 +261,7 @@ def request_data(court_name, headers, start_date, end_date_):
                     logging.error("NO data Found for start date: " + str(start_date))
                     update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
                                  str(court_name) + "'")
+                    sleep(2)
 
                     start_date = end_date
                     continue

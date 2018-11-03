@@ -169,6 +169,27 @@ def select_count_query(table_name, case_no):
         return False
 
 
+def select_count_query_bench(table_name, case_no, bench):
+    db = db_connect()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT count(case_no) FROM " + str(table_name) + " WHERE case_no = '" + str(case_no) +
+                       "' AND bench = '" + str(bench) + "'")
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        if not result[0]['count(case_no)']:
+            return True
+        else:
+            return False
+
+    except Exception as e:
+        traceback.print_exc()
+        logging.error("Failed select count query: %s", e)
+        db.close()
+        return False
+
+
 def select_count_query_other(table_name, col_name, value):
     db = db_connect()
     try:

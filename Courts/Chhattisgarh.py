@@ -137,7 +137,7 @@ def request_data(court_name, start_date, end_date_):
             response = requests.request("GET", url, proxies=proxy_dict)
             res = response.text
 
-            if "file or directory not found" in res.upper():
+            if "file or directory not found" in res.lower():
                 logging.error("NO data Found for start date: " + str(year_))
 
                 sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
