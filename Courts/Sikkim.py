@@ -111,7 +111,7 @@ def parse_html(html_str, court_name):
                 if i == 3:
                     case_no = escape_string(str(td.text))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
 
                     if i == 4:

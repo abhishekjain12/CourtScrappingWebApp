@@ -115,7 +115,7 @@ def parse_html(html_str, court_name, bench):
                         judgment_date = escape_string(td_text.replace("Judgement", "").replace("Orders", "")
                                                       .replace("r", "").replace("(AFR)", "").replace("NA", "").strip())
 
-            if select_count_query_bench(str(court_name), str(case_no), bench):
+            if select_count_query_bench(str(court_name), str(case_no), bench, 'judgment_date', judgment_date):
                 insert_check = True
 
             if tr_count == 2:

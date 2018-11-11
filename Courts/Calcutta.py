@@ -3,7 +3,6 @@ import os
 import requests
 import traceback
 import logging
-import shutil
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -92,7 +91,7 @@ def parse_html(html_str, court_name, court_id):
                 if i == 1:
                     case_no = escape_string(str(td.decode_contents()))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
 
                     if i == 3:

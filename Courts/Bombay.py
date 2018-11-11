@@ -127,7 +127,7 @@ def parse_html(html_str, court_name, m_sideflg):
                     case_no = str(a_tag.text).replace("\n", "")
                     pdf_data = escape_string(request_pdf(pdf_file, case_no, court_name))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
 
             if case_no != "NULL" and insert_check:

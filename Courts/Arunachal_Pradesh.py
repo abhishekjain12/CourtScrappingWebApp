@@ -117,7 +117,7 @@ def parse_html(html_str, month_year, court_name):
                     pdf_file = escape_string(str(base_url + a_tag.get('href')))
                     case_no = escape_string(str(a_tag.text).replace("\n", ""))
 
-                    if select_count_query(str(court_name), str(case_no)):
+                    if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                         insert_check = True
                         pdf_data = escape_string(request_pdf(pdf_file, case_no, court_name))
 

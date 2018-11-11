@@ -102,15 +102,16 @@ def parse_html(html_str, court_name, bench_code):
                 if i == 1:
                     case_no = escape_string(str(td.decode_contents()))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if i == 2:
+                    petitioner = escape_string(str(td.decode_contents()))
+                if i == 4:
+                    respondent = escape_string(str(td.decode_contents()))
+                if i == 6:
+                    judgment_date = escape_string(str(td.decode_contents()))
+
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
 
-                    if i == 2:
-                        petitioner = escape_string(str(td.decode_contents()))
-                    if i == 4:
-                        respondent = escape_string(str(td.decode_contents()))
-                    if i == 6:
-                        judgment_date = escape_string(str(td.decode_contents()))
                     if i == 7:
                         judge_name = escape_string(str(td.decode_contents()))
                     if i == 8:

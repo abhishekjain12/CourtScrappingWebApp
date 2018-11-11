@@ -17,7 +17,7 @@ module_directory = os.path.dirname(__file__)
 def db_connect():
     return pymysql.connect(host="localhost",
                            user="root",
-                           password="krypton212",
+                           password="Future@4",
                            db="Courts_Data",
                            # charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
@@ -149,32 +149,12 @@ def select_one_query(query):
         return None
 
 
-def select_count_query(table_name, case_no):
-    db = db_connect()
-    try:
-        cursor = db.cursor()
-        cursor.execute("SELECT count(case_no) FROM " + str(table_name) + " WHERE case_no = '" + str(case_no) + "'")
-        result = cursor.fetchall()
-        cursor.close()
-        db.close()
-        if not result[0]['count(case_no)']:
-            return True
-        else:
-            return False
-
-    except Exception as e:
-        traceback.print_exc()
-        logging.error("Failed select count query: %s", e)
-        db.close()
-        return False
-
-
-def select_count_query_bench(table_name, case_no, bench):
+def select_count_query(table_name, case_no, date_col, date_val):
     db = db_connect()
     try:
         cursor = db.cursor()
         cursor.execute("SELECT count(case_no) FROM " + str(table_name) + " WHERE case_no = '" + str(case_no) +
-                       "' AND bench = '" + str(bench) + "'")
+                       "' AND " + str(date_col) + " = '" + str(date_val) + "'")
         result = cursor.fetchall()
         cursor.close()
         db.close()
@@ -190,12 +170,33 @@ def select_count_query_bench(table_name, case_no, bench):
         return False
 
 
-def select_count_query_other(table_name, col_name, value):
+def select_count_query_bench(table_name, case_no, bench, date_col, date_val):
+    db = db_connect()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT count(case_no) FROM " + str(table_name) + " WHERE case_no = '" + str(case_no) +
+                       "' AND bench = '" + str(bench) + "' AND " + str(date_col) + " = '" + str(date_val) + "'")
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        if not result[0]['count(case_no)']:
+            return True
+        else:
+            return False
+
+    except Exception as e:
+        traceback.print_exc()
+        logging.error("Failed select count query: %s", e)
+        db.close()
+        return False
+
+
+def select_count_query_other(table_name, col_name, value, date_col, date_val):
     db = db_connect()
     try:
         cursor = db.cursor()
         cursor.execute("SELECT count(" + str(col_name) + ") FROM " + str(table_name) + " WHERE " + str(col_name) +
-                       " = '" + str(value) + "'")
+                       " = '" + str(value) + "' AND " + str(date_col) + " = '" + str(date_val) + "'")
         result = cursor.fetchall()
         cursor.close()
         db.close()

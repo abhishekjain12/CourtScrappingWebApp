@@ -97,7 +97,7 @@ def parse_html(html_str, court_name, bench, child_url):
                 if i == 2:
                     date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if select_count_query(str(court_name), str(case_no), 'date_of_order', date_of_order):
                     insert_check = True
 
                     if i == 3:

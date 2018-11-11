@@ -109,11 +109,11 @@ def parse_html(html_str, court_name, appeal_type):
                 if i == 2:
                     case_no = escape_string(str(td.text).strip().replace("\n", ""))
 
-                if select_count_query(str(court_name), str(case_no)):
-                    insert_check = True
+                if i == 3:
+                    date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
 
-                    if i == 3:
-                        date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
+                if select_count_query(str(court_name), str(case_no), 'date_of_order', date_of_order):
+                    insert_check = True
 
                     if i == 4:
                         party = str(td.decode_contents()).split("V/s")

@@ -109,7 +109,7 @@ def parse_html(html_str, court_name):
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     case_no = escape_string(str(a_tag.text).replace("\n", ""))
 
-                    if select_count_query(str(court_name), str(case_no)):
+                    if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                         insert_check = True
 
                         new_url = base_url + a_tag.get('href')

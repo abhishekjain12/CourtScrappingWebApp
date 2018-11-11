@@ -19,7 +19,7 @@ from Utils.my_proxy import proxy_dict
 
 
 module_directory = os.path.dirname(__file__)
-base_url = "https://www.itat.gov.in/judicial"
+base_url = "http://www.ipabindia.org/aOrders.aspx"
 
 
 def request_pdf(url, case_id, court_name):
@@ -204,7 +204,7 @@ def full_details_parse(res, appeal_no, court_name):
         logging.error("Failed to parse the details html: %s", e)
 
 
-def parse_html(html_str, court_name, bench):
+def parse_html(html_str, court_name):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         table_list = soup.find_all('table', {'style': 'width:100%; margin-top: 10px; font-size: 12px;'})
@@ -265,8 +265,8 @@ def parse_html(html_str, court_name, bench):
             if appeal_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (appeal_no, appellant, respondent, filed_by, " \
                                                                "bench_code, pdf_filename ) VALUE ('" + appeal_no + \
-                            "', '" + appellant + "', '" + respondent + "', '" + filed_by + "', " + str(bench) + \
-                            ", '" + court_name + "_" + slugify(appeal_no) + ".pdf')"
+                            "', '" + appellant + "', '" + respondent + "', '" + filed_by + "', '" + court_name + \
+                            "_" + slugify(appeal_no) + ".pdf')"
                 insert_query(sql_query)
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "', date_of_order ='" +
@@ -282,7 +282,7 @@ def parse_html(html_str, court_name, bench):
         return False
 
 
-def request_data(court_name, bench, start_date, end_date_):
+def request_data(court_name, start_date, end_date_):
     try:
         url = base_url + "/tribunalorders"
         headers = {
@@ -309,8 +309,7 @@ def request_data(court_name, bench, start_date, end_date_):
             update_query("UPDATE Tracker SET Start_Date = '" + str(start_date) + "', End_Date = '" + str(end_date) +
                          "' WHERE Name = '" + str(court_name) + "'")
 
-            payload = "bench=" + str(bench) + \
-                      "&appeal_type=" \
+            payload = "appeal_type=" \
                       "&hearingdate=" \
                       "&pronouncementdate=" \
                       "&orderdate=" + str(start_date) + \
@@ -328,8 +327,8 @@ def request_data(court_name, bench, start_date, end_date_):
                 start_date = end_date
                 continue
 
-            if not parse_html(res, court_name, bench):
-                logging.error("Failed to parse data from bench: " + str(bench))
+            if not parse_html(res, court_name):
+                logging.error("Failed to parse data")
 
             start_date = end_date
 
@@ -337,11 +336,11 @@ def request_data(court_name, bench, start_date, end_date_):
 
     except Exception as e:
         traceback.print_exc()
-        logging.error("Failed to get data from bench: " + str(bench))
+        logging.error("Failed to get data ")
         logging.error("Failed to request: %s", e)
         return False
 
 
-def main(court_name, bench, start_date, end_date):
-    logs.initialize_logger("Income_Tax_Appellate")
-    return request_data(court_name, bench, start_date, end_date)
+def main(court_name, start_date, end_date):
+    logs.initialize_logger("Intellectual_Property_Appellate.py")
+    return request_data(court_name, start_date, end_date)

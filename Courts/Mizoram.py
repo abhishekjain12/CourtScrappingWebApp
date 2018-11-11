@@ -122,7 +122,7 @@ def parse_html(html_str, court_name):
                 if i == 5:
                     judge_name = escape_string(str(td.decode_contents()).replace("\n", ""))
 
-            if select_count_query(str(court_name), str(case_no)):
+            if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                 insert_check = True
 
             if case_no != "NULL" and insert_check:

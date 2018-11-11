@@ -85,15 +85,14 @@ def parse_html(html_str, court_name):
                     break
 
             case_no = escape_string(str(str(a.text)[:-10]).replace("-", ""))
-            judgment_date = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
             insert_check = False
 
-            if select_count_query(str(court_name), str(case_no)):
-                insert_check = True
+            judgment_date = escape_string(str(a.text)[-10:])
 
-                judgment_date = escape_string(str(a.text)[-10:])
+            if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                insert_check = True
 
                 a_link = a.get('href')
                 pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
@@ -174,4 +173,3 @@ def request_data(court_name, start_date, end_date_):
 def main(court_name, start_date, end_date):
     logs.initialize_logger("NAGALAND")
     return request_data(court_name, start_date, end_date)
-

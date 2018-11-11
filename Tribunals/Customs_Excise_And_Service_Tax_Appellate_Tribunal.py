@@ -105,19 +105,19 @@ def parse_html(html_str, court_name, bench, start_date):
                 if i == 2:
                     case_no = escape_string(str(td.text).strip().replace("\n", ""))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if i == 3:
+                    party = str(td.decode_contents()).split("<br/>")
+                    petitioner = escape_string(str(party[0]).strip())
+                    respondent = escape_string(str(party[2]).strip())
+
+                if i == 4:
+                    judge_name = escape_string(str(td.text).strip())
+
+                if i == 5:
+                    judgment_date = escape_string(str(td.text).strip())
+
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
-
-                    if i == 3:
-                        party = str(td.decode_contents()).split("<br/>")
-                        petitioner = escape_string(str(party[0]).strip())
-                        respondent = escape_string(str(party[2]).strip())
-
-                    if i == 4:
-                        judge_name = escape_string(str(td.text).strip())
-
-                    if i == 5:
-                        judgment_date = escape_string(str(td.text).strip())
 
                     if i == 7:
                         a_tag = BeautifulSoup(str(td), "html.parser").a

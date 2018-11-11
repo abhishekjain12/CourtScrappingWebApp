@@ -150,15 +150,15 @@ def parse_html(html_str, court_name, flag):
                 i += 1
                 if i == 2:
                     judgment_day = escape_string(str(td.decode_contents()))
-                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + ", " + \
-                                    month_year.replace('JUDGEMENTS FOR THE MONTH OF', '')
+                    judgment_date = str(re.findall('\d+', str(judgment_day))[0]) + ", " + month_year.replace(
+                        'JUDGEMENTS FOR THE MONTH OF', '')
 
                 if i == 3:
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     pdf_file = escape_string(str(base_url + a_tag.get('href')))
                     case_no = escape_string(str(a_tag.text).replace("\n", "").strip())
 
-                    if select_count_query(str(court_name), str(case_no)):
+                    if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                         insert_check = True
                         pdf_data = escape_string(request_pdf(str(base_url + a_tag.get('href')), case_no, court_name))
 

@@ -103,7 +103,7 @@ def parse_html(html_str):
                     font_tag = BeautifulSoup(str(td), "html.parser").font
                     case_no = escape_string(str(font_tag.text))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
 
                     if i == 3 and td.get('align') is None:

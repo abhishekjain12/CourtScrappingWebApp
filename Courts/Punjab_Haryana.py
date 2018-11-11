@@ -103,16 +103,16 @@ def parse_html(html_str, court_name, headers):
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     case_no = escape_string(str(a_tag.text))
 
-                if select_count_query(str(court_name), str(case_no)):
+                if i == 3:
+                    party = str(td.decode_contents()).split("Vs")
+                    petitioner = escape_string(str(party[0]))
+                    respondent = escape_string(str(party[1]))
+
+                if i == 4:
+                    judgment_date = escape_string(str(td.decode_contents()))
+
+                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                     insert_check = True
-
-                    if i == 3:
-                        party = str(td.decode_contents()).split("Vs")
-                        petitioner = escape_string(str(party[0]))
-                        respondent = escape_string(str(party[1]))
-
-                    if i == 4:
-                        judgment_date = escape_string(str(td.decode_contents()))
 
                     if i == 5:
                         a_link = BeautifulSoup(str(td), "html.parser").a.get('onclick')
