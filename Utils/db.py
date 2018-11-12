@@ -15,7 +15,7 @@ module_directory = os.path.dirname(__file__)
 
 
 def db_connect():
-    return pymysql.connect(host="35.200.214.20",
+    return pymysql.connect(host="35.226.213.76",
                            user="root",
                            password="krypton212",
                            db="Courts_Data",
