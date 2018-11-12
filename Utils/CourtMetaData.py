@@ -385,7 +385,7 @@ metadata = [
             },
             {
                 'id': 'Banglore',
-                'name': 'Bangalore'
+                'name': 'Banglore'
             },
             {
                 'id': 'Chennai',

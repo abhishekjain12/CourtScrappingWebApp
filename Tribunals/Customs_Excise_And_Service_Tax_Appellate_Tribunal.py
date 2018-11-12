@@ -122,7 +122,7 @@ def parse_html(html_str, court_name, bench, start_date):
                     if i == 7:
                         a_tag = BeautifulSoup(str(td), "html.parser").a
                         pdf_file = base_url + a_tag.get('href')
-                        pdf_data = escape_string(request_pdf(pdf_file, case_no, court_name))
+                        # pdf_data = escape_string(request_pdf(pdf_file, case_no, court_name))
 
             if case_no != "NULL" and insert_check:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
