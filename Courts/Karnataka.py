@@ -16,7 +16,8 @@ from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
 from Utils import logs
-from Utils.db import insert_query, update_query, update_history_tracker, select_one_query, select_count_query
+from Utils.db import insert_query, update_query, update_history_tracker, select_count_query, \
+    select_one_local_query, update_local_query
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
@@ -76,7 +77,8 @@ def parse_html(html_str, court_name):
         tr_count = 0
         for tr in tr_list:
 
-            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name +
+                                                    "'")
             if emergency_exit is not None:
                 if emergency_exit['emergency_exit'] == 1:
                     break
@@ -144,14 +146,13 @@ def parse_html(html_str, court_name):
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
                              str(case_no) + "'")
-                update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
+                update_local_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
 
     except Exception as e:
         logging.error("Failed to parse the html: %s", e)
-        sql_query = "UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
+        update_local_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
 
 
@@ -173,7 +174,8 @@ def offset_link(html_str, url, querystring, court_name):
         for page_link in range(0, total_calls):
             next_num += 200
 
-            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
+            emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name +
+                                                    "'")
             if emergency_exit['emergency_exit'] == 1:
                 update_history_tracker(court_name)
                 return True
@@ -196,9 +198,8 @@ def request_data_old(court_name, start_date, end_date):
     try:
         url = base_url + "/judgments/browse"
 
-        sql_query = "UPDATE Tracker SET Start_Date = '" + start_date + "', End_Date = '" + end_date + \
-                    "' WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
+        update_local_query("UPDATE Tracker SET Start_Date = '" + start_date + "', End_Date = '" + end_date +
+                           "' WHERE Name = '" + str(court_name) + "'")
 
         querystring = {"type": "reported", "value": "Reportable", "sort_by": "1", "order": "ASC", "rpp": "357",
                        "etal": "0", "submit_browse": "Update"}
@@ -207,15 +208,14 @@ def request_data_old(court_name, start_date, end_date):
         res = response.text
 
         if "NO ROWS" in res.upper():
-            sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
-                        str(court_name) + "'"
-            update_query(sql_query)
+            update_local_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                               str(court_name) + "'")
 
         if not parse_html(res, court_name):
             logging.error("Failed to parse data old")
 
-        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
-                     str(court_name) + "'")
+        update_local_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
+                           str(court_name) + "'")
         update_history_tracker(court_name)
 
         return True
@@ -225,8 +225,8 @@ def request_data_old(court_name, start_date, end_date):
         logging.error("Failed to get data from date: " + str(start_date))
         logging.error("Failed to request: %s", e)
 
-        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
-                     str(court_name) + "'")
+        update_local_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED' WHERE Name = '" +
+                           str(court_name) + "'")
         update_history_tracker(court_name)
 
         return False
@@ -236,9 +236,8 @@ def request_data(court_name, start_date, end_date_):
     try:
         url = base_url + "/judgmentsdsp/browse"
 
-        sql_query = "UPDATE Tracker SET Start_Date = '" + start_date + "', End_Date = '" + end_date_ + \
-                    "' WHERE Name = '" + str(court_name) + "'"
-        update_query(sql_query)
+        update_local_query("UPDATE Tracker SET Start_Date = '" + start_date + "', End_Date = '" + end_date_ +
+                           "' WHERE Name = '" + str(court_name) + "'")
 
         querystring = {"type": "reportable", "order": "ASC", "rpp": "200", "value": "Reportable"}
 
@@ -246,9 +245,8 @@ def request_data(court_name, start_date, end_date_):
         res = response.text
 
         if "NO ROWS" in res.upper():
-            sql_query = "UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" + \
-                        str(court_name) + "'"
-            update_query(sql_query)
+            update_local_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                               str(court_name) + "'")
 
         if not offset_link(res, url, querystring, court_name):
             logging.error("Failed to parse data")

@@ -342,5 +342,5 @@ def request_data(court_name, start_date, end_date_):
 
 
 def main(court_name, start_date, end_date):
-    logs.initialize_logger("Intellectual_Property_Appellate.py")
+    logs.initialize_logger("Intellectual_Property_Appellate")
     return request_data(court_name, start_date, end_date)

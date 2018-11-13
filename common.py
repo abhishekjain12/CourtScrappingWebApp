@@ -3,7 +3,6 @@
 # fw.write(str(res))
 import logging
 import traceback
-import pymysql.cursors
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
@@ -14,6 +13,8 @@ from io import StringIO
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
 from slugify import slugify
+
+from Utils import db
 
 
 def transfer_to_bucket(folder_name, filename):
@@ -56,25 +57,24 @@ def pdf_to_text_api(file_path):
 
 def court_pdfname(court_name):
     try:
-        db = pymysql.connect(host="localhost", user="root", password="krypton212", db="Courts_Data",
-                             cursorclass=pymysql.cursors.DictCursor)
+        db_ = db.db_connect()
         while True:
-            cursor = db.cursor()
+            cursor = db_.cursor()
             cursor.execute("SELECT case_no FROM " + court_name + " WHERE pdf_filename IS NULL LIMIT 1")
             result = cursor.fetchone()
 
             if result is None:
                 cursor.close()
-                db.close()
+                db_.close()
                 return 'Done'
             else:
                 sql = "UPDATE " + court_name + " SET pdf_filename = '" + court_name + "_" + \
                       slugify(result['case_no']) + ".pdf' WHERE case_no = '" + str(result['case_no']) + "'"
-                cursor = db.cursor()
+                cursor = db_.cursor()
                 cursor.execute(sql)
-                db.commit()
+                db_.commit()
 
     except Exception as e:
         print(e)
-        logging.error("PDF FIlename Error: %s", e)
+        logging.error("PDF Filename Error: %s", e)
         return False
