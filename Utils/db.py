@@ -310,6 +310,8 @@ def select_json_query(table_name, start_date, end_date):
 
             update_query("UPDATE Tracker_JSON SET No_Files=No_Files+1, json_count=json_count+1 WHERE Name='" +
                          table_name + "'")
+            update_local_query("UPDATE Tracker_JSON SET No_Files=No_Files+1, json_count=json_count+1 WHERE Name='" +
+                               table_name + "'")
 
         update_local_query("UPDATE Tracker_JSON SET status='IN_SUCCESS', emergency_exit=true WHERE Name='" +
                            table_name + "'")
