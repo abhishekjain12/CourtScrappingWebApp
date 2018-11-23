@@ -23,8 +23,12 @@ module_directory = os.path.dirname(__file__)
 base_url = "http://hcbombayatgoa.nic.in/"
 
 
-def request_pdf(case_id, court_name, val, headers):
+def request_pdf(case_id, court_name, val):
     try:
+        headers = {
+            'Content-Type': "application/x-www-form-urlencoded",
+            'Cache-Control': "no-cache"
+        }
         payload = 'submit1=Get&txtlist=' + str(int(val))
         response = requests.request("POST", base_url + 'jq_case.asp', data=payload, headers=headers, proxies=proxy_dict)
         if response.status_code == 200:
@@ -62,7 +66,7 @@ def request_pdf(case_id, court_name, val, headers):
         return "NULL"
 
 
-def parse_html(html_str, court_name, headers):
+def parse_html(html_str, court_name):
     try:
         soup = BeautifulSoup(html_str, "html.parser")
         select_soup = BeautifulSoup(str(soup.find_all('select', {'id': 'txtlist'})[0]), "html.parser")
@@ -98,7 +102,7 @@ def parse_html(html_str, court_name, headers):
                 insert_check = True
 
             if case_no != "NULL" and insert_check:
-                pdf_data = escape_string(request_pdf(case_no, court_name, pdf_value, headers))
+                pdf_data = escape_string(request_pdf(case_no, court_name, pdf_value))
 
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
                                                                "judge, pdf_file, pdf_filename, reportable) VALUE ('" + \
@@ -164,7 +168,7 @@ def request_data(court_name, start_date, end_date_):
                 start_date = end_date
                 continue
 
-            if not parse_html(res, court_name, headers):
+            if not parse_html(res, court_name):
                 logging.error("Failed to parse data from date: " + str(start_date))
 
             start_date = end_date

@@ -7,6 +7,7 @@ import requests
 
 from math import floor
 
+from Courts import Goa
 from Utils.my_proxy import proxy_dict
 from common import transfer_to_bucket
 
@@ -354,20 +355,29 @@ def download_pdf_to_bucket(table_name):
                     filename = "/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + \
                                str(record['pdf_filename'])
 
-                    response = requests.request("GET", str(record['pdf_file']), proxies=proxy_dict)
-                    if response.status_code == 200:
-                        res = response.text
-                        if "no data found" in res.lower():
-                            logging.error("No data for: " + str(record['pdf_filename']))
-                            return str("NULL")
-                        fw = open(filename, "wb")
-                        fw.write(response.content)
-
+                    if str(table_name).lower() == "goa":
+                        Goa.request_pdf(record['case_no'], 'Goa', record['pdf_file'])
                         if transfer_to_bucket('PDF_Files', filename):
                             os.remove(filename)
+                        update_query("UPDATE Goa SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
+                        update_local_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='Goa'")
 
-                        update_query("UPDATE " + table_name + " SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
-                        update_local_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='" + table_name + "'")
+                    else:
+                        response = requests.request("GET", str(record['pdf_file']), proxies=proxy_dict)
+                        if response.status_code == 200:
+                            res = response.text
+                            if "no data found" in res.lower():
+                                logging.error("No data for: " + str(record['pdf_filename']))
+                                return str("NULL")
+                            fw = open(filename, "wb")
+                            fw.write(response.content)
+
+                            if transfer_to_bucket('PDF_Files', filename):
+                                os.remove(filename)
+
+                            update_query("UPDATE " + table_name + " SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
+                            update_local_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='" + table_name +
+                                               "'")
 
         update_local_query("UPDATE Tracker_pdf SET status='IN_SUCCESS', emergency_exit=true WHERE Name='" +
                            table_name + "'")
