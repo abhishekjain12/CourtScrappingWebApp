@@ -7,7 +7,7 @@ import requests
 
 from math import floor
 
-from Courts import Goa
+import Courts
 from Utils.my_proxy import proxy_dict
 from common import transfer_to_bucket
 
@@ -356,12 +356,12 @@ def download_pdf_to_bucket(table_name):
                                str(record['pdf_filename'])
 
                     if str(table_name).lower() == "goa":
-                        Goa.request_pdf(record['case_no'], 'Goa', record['pdf_file'])
+                        Courts.Goa.request_pdf(record['case_no'], 'Goa', record['pdf_file'])
                         if transfer_to_bucket('PDF_Files', filename):
                             os.remove(filename)
                         update_query("UPDATE Goa SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
                         update_local_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='Goa'")
-
+                        
                     else:
                         response = requests.request("GET", str(record['pdf_file']), proxies=proxy_dict)
                         if response.status_code == 200:
@@ -371,12 +371,12 @@ def download_pdf_to_bucket(table_name):
                                 return str("NULL")
                             fw = open(filename, "wb")
                             fw.write(response.content)
-
+    
                             if transfer_to_bucket('PDF_Files', filename):
                                 os.remove(filename)
-
+    
                             update_query("UPDATE " + table_name + " SET is_pdf=1 WHERE id='" + str(record['id']) + "'")
-                            update_local_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='" + table_name +
+                            update_local_query("UPDATE Tracker_pdf SET No_Files=No_Files+1 WHERE Name='" + table_name + 
                                                "'")
 
         update_local_query("UPDATE Tracker_pdf SET status='IN_SUCCESS', emergency_exit=true WHERE Name='" +
