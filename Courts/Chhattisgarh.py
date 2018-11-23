@@ -80,8 +80,7 @@ def parse_html(html_str, court_name):
             a = BeautifulSoup(str(li), "html.parser").a
             a_link = a.get('href')
 
-            mixed = str(a_link[a_link.rfind("/")+1:]).replace('.pdf', '')
-            case_no = escape_string(mixed[:-10])
+            case_no = str(a_link[a_link.rfind("/")+1:]).replace('.pdf', '')
             judgment_date = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
@@ -90,7 +89,7 @@ def parse_html(html_str, court_name):
             if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
                 insert_check = True
 
-                judgment_date = escape_string(mixed[-10:].replace('(', '').replace(')', ''))
+                judgment_date = escape_string(case_no[-10:].replace('(', '').replace(')', ''))
                 pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
                 pdf_file = escape_string(base_url + a_link)
 
