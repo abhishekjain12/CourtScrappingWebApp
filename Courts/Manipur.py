@@ -89,7 +89,7 @@ def parse_html(html_str):
             judge_name = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.select('td')
@@ -105,33 +105,34 @@ def parse_html(html_str):
                     font_tag = BeautifulSoup(str(td), "html.parser").font
                     case_no = escape_string(str(font_tag.text))
 
-                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                #     insert_check = True
 
-                    if i == 3 and td.get('align') is None:
-                        font_tag = BeautifulSoup(str(td), "html.parser").font
-                        respondent = escape_string(str(font_tag.text))
+                if i == 3 and td.get('align') is None:
+                    font_tag = BeautifulSoup(str(td), "html.parser").font
+                    respondent = escape_string(str(font_tag.text))
 
-                    if i == 4 and td.get('align') is None:
-                        font_tag = BeautifulSoup(str(td), "html.parser").font
-                        petitioner = escape_string(str(font_tag.text))
+                if i == 4 and td.get('align') is None:
+                    font_tag = BeautifulSoup(str(td), "html.parser").font
+                    petitioner = escape_string(str(font_tag.text))
 
-                    if i == 5 and td.get('align') is None:
-                        font_tag = BeautifulSoup(str(td), "html.parser").font
-                        judgment_date = escape_string(str(font_tag.text))
+                if i == 5 and td.get('align') is None:
+                    font_tag = BeautifulSoup(str(td), "html.parser").font
+                    judgment_date = escape_string(str(font_tag.text))
 
-                    if td.get('align') == 'left':
-                        td_soup1 = BeautifulSoup(str(td), "html.parser")
-                        judge_name = escape_string(str(td_soup1.text))
+                if td.get('align') == 'left':
+                    td_soup1 = BeautifulSoup(str(td), "html.parser")
+                    judge_name = escape_string(str(td_soup1.text))
 
-                    if td.get('align') == 'center':
-                        font_tag = BeautifulSoup(str(td), "html.parser").font
-                        a_tag = BeautifulSoup(str(font_tag), "html.parser").a
-                        pdf_file = escape_string(base_url + "/" + a_tag.get('href'))
-                        pdf_data = escape_string(bytes(str(request_pdf(base_url + "/" + a_tag.get('href'), case_no)),
-                                                       'utf-8').decode("utf-8", 'ignore'))
+                if td.get('align') == 'center':
+                    font_tag = BeautifulSoup(str(td), "html.parser").font
+                    a_tag = BeautifulSoup(str(font_tag), "html.parser").a
+                    pdf_file = escape_string(base_url + "/" + a_tag.get('href'))
+                    pdf_data = escape_string(bytes(str(request_pdf(base_url + "/" + a_tag.get('href'), case_no)),
+                                                   'utf-8').decode("utf-8", 'ignore'))
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
                                                                "judge_name, pdf_file, pdf_filename) VALUE ('" + \
                             case_no + "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + \

@@ -91,7 +91,7 @@ def parse_html(html_str, court_name):
             status = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -102,27 +102,28 @@ def parse_html(html_str, court_name):
                 if i == 1:
                     case_no = escape_string(str(td.decode_contents()))
 
-                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                #     insert_check = True
 
-                    if i == 2:
-                        coram = escape_string(str(td.decode_contents()))
+                if i == 2:
+                    coram = escape_string(str(td.decode_contents()))
 
-                    if i == 3:
-                        judgment_date = escape_string(str(td.decode_contents()))
+                if i == 3:
+                    judgment_date = escape_string(str(td.decode_contents()))
 
-                    if i == 5:
-                        type_ = escape_string(str(td.decode_contents()))
+                if i == 5:
+                    type_ = escape_string(str(td.decode_contents()))
 
-                    if i == 6:
-                        status = escape_string(str(td.decode_contents()))
+                if i == 6:
+                    status = escape_string(str(td.decode_contents()))
 
-                    if i == 4:
-                        a_tag = BeautifulSoup(str(td), "html.parser").a
-                        pdf_file = escape_string(base_url + a_tag.get('href'))
-                        pdf_data = escape_string(request_pdf(base_url + a_tag.get('href'), case_no, court_name))
+                if i == 4:
+                    a_tag = BeautifulSoup(str(td), "html.parser").a
+                    pdf_file = escape_string(base_url + a_tag.get('href'))
+                    pdf_data = escape_string(request_pdf(base_url + a_tag.get('href'), case_no, court_name))
 
-            if case_no != "NULL" and insert_check and case_no.find("DISCLAIMER") == -1:
+            # if case_no != "NULL" and insert_check and case_no.find("DISCLAIMER") == -1:
+            if case_no != "NULL" and case_no.find("DISCLAIMER") == -1:
 
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, judgment_date, coram, type, status, " \
                                                                "pdf_file, pdf_filename) VALUE ('" + case_no + "', '" + \

@@ -90,7 +90,7 @@ def parse_html(html_str, court_name, headers):
             judgment_date = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             table_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = table_soup.find_all('td')
@@ -113,19 +113,20 @@ def parse_html(html_str, court_name, headers):
                 if i == 4:
                     judgment_date = escape_string(str(td.decode_contents()))
 
-                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                #     insert_check = True
 
-                    if i == 5:
-                        a_link = BeautifulSoup(str(td), "html.parser").a.get('onclick')
-                        a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
-                        pdf_file = escape_string(base_url + "/" + a_formatted)
+                if i == 5:
+                    a_link = BeautifulSoup(str(td), "html.parser").a.get('onclick')
+                    a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
+                    pdf_file = escape_string(base_url + "/" + a_formatted)
 
-                        # pdf_data = escape_string(request_pdf(
-                        #     str(pdf_file).replace(base_url + "download_file.php?auth=", ""), case_no, court_name,
-                        #     headers))
+                    # pdf_data = escape_string(request_pdf(
+                    #     str(pdf_file).replace(base_url + "download_file.php?auth=", ""), case_no, court_name,
+                    #     headers))
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
                                                                "pdf_file, pdf_filename) VALUE ('" + case_no + "', '" + \
                             petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + pdf_file + "', '" + \

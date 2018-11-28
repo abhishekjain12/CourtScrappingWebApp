@@ -95,7 +95,7 @@ def parse_html(html_str, court_name):
             bench = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -111,18 +111,18 @@ def parse_html(html_str, court_name):
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     case_no = escape_string(str(a_tag.text).replace("\n", ""))
 
-                    if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                        insert_check = True
+                    # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                    #     insert_check = True
 
-                        new_url = base_url + a_tag.get('href')
-                        response = requests.request('GET', new_url, headers=headers, proxies=proxy_dict)
+                    new_url = base_url + a_tag.get('href')
+                    response = requests.request('GET', new_url, headers=headers, proxies=proxy_dict)
 
-                        new_soup = BeautifulSoup(str(response.text), "html.parser")
-                        new_td_tag = new_soup.find_all('td', {'headers': 't1'})[0]
-                        new_a_href = BeautifulSoup(str(new_td_tag), "html.parser").a.get('href')
+                    new_soup = BeautifulSoup(str(response.text), "html.parser")
+                    new_td_tag = new_soup.find_all('td', {'headers': 't1'})[0]
+                    new_a_href = BeautifulSoup(str(new_td_tag), "html.parser").a.get('href')
 
-                        pdf_file = escape_string(base_url + new_a_href)
-                        pdf_data = escape_string(request_pdf(base_url + new_a_href, case_no, court_name))
+                    pdf_file = escape_string(base_url + new_a_href)
+                    pdf_data = escape_string(request_pdf(base_url + new_a_href, case_no, court_name))
 
                 if i == 3:
                     judge_name = escape_string(str(td.text))
@@ -136,7 +136,8 @@ def parse_html(html_str, court_name):
                 if i == 6:
                     bench = escape_string(str(td.text))
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + "(case_no, judgment_date, judge_name, petitioner, " \
                                                                "respondent, bench, pdf_file, pdf_filename) VALUE ('" +\
                             case_no + "', '" + judgment_date + "', '" + judge_name + "', '" + petitioner + "', '" + \

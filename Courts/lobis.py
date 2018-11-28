@@ -95,7 +95,7 @@ def parse_html(html_str, court_name, dc):
             corrigendum = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -116,27 +116,28 @@ def parse_html(html_str, court_name, dc):
                     span_tag = BeautifulSoup(str(td), "html.parser").span
                     judgment_date = escape_string(str(span_tag.decode_contents()))
 
-                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                #     insert_check = True
 
-                    if i == 5:
-                        span_tag = BeautifulSoup(str(td), "html.parser").span
-                        corrigendum = escape_string(str(span_tag.decode_contents()))
+                if i == 5:
+                    span_tag = BeautifulSoup(str(td), "html.parser").span
+                    corrigendum = escape_string(str(span_tag.decode_contents()))
 
-                    if i == 4:
-                        td_soup = BeautifulSoup(str(td), "html.parser")
-                        span_list = td_soup.find_all('span')
+                if i == 4:
+                    td_soup = BeautifulSoup(str(td), "html.parser")
+                    span_list = td_soup.find_all('span')
 
-                        j = 0
-                        for span in span_list:
-                            j += 1
+                    j = 0
+                    for span in span_list:
+                        j += 1
 
-                            if j == 1:
-                                petitioner = escape_string(str(span.decode_contents()))
-                            if j == 3:
-                                respondent = escape_string(str(span.decode_contents()))
+                        if j == 1:
+                            petitioner = escape_string(str(span.decode_contents()))
+                        if j == 3:
+                            respondent = escape_string(str(span.decode_contents()))
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
                                                                "corrigendum, pdf_file, bench_code, pdf_filename) VALUE"\
                                                                " ('" + case_no + "', '" + petitioner + "', '" + \

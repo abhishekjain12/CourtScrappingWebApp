@@ -89,18 +89,19 @@ def parse_html(html_str, court_name):
             case_no = escape_string(str(str(a.text)[:-10]).replace("-", ""))
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             judgment_date = escape_string(str(a.text)[-10:])
 
-            if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                insert_check = True
+            # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+            #     insert_check = True
 
-                a_link = a.get('href')
-                pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
-                pdf_file = escape_string(base_url + a_link)
+            a_link = a.get('href')
+            pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+            pdf_file = escape_string(base_url + a_link)
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, judgment_date, pdf_file, pdf_filename) " \
                                                                "VALUE ('" + case_no + "', '" + judgment_date + "', '" \
                             + pdf_file + "', '" + court_name + "_" + slugify(case_no) + ".pdf')"

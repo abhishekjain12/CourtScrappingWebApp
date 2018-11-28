@@ -233,7 +233,7 @@ def parse_html(html_str, court_name, bench):
             pdf_data = "NULL"
             pdf_file = "NULL"
             order_type = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -258,13 +258,14 @@ def parse_html(html_str, court_name, bench):
                     details_url = a_tag.get('href')
                     date_of_order, pdf_file, order_type = details_parse(details_url, appeal_no, court_name)
 
-                    if select_count_query_other(str(court_name), 'appeal_no', str(appeal_no), 'date_of_order',
-                                                date_of_order):
-                        insert_check = True
+                    # if select_count_query_other(str(court_name), 'appeal_no', str(appeal_no), 'date_of_order',
+                    #                             date_of_order):
+                    #     insert_check = True
 
-                        pdf_data = escape_string(str(request_pdf(pdf_file, appeal_no, court_name)).replace("'", ""))
+                    pdf_data = escape_string(str(request_pdf(pdf_file, appeal_no, court_name)).replace("'", ""))
 
-            if appeal_no != "NULL" and insert_check:
+            # if appeal_no != "NULL" and insert_check:
+            if appeal_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (appeal_no, appellant, respondent, filed_by, " \
                                                                "bench_code, pdf_filename ) VALUE ('" + appeal_no + \
                             "', '" + appellant + "', '" + respondent + "', '" + filed_by + "', " + str(bench) + \

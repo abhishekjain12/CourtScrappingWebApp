@@ -79,7 +79,7 @@ def parse_html(html_str, court_name):
                 if emergency_exit['emergency_exit'] == 1:
                     break
 
-            insert_check = False
+            # insert_check = False
             pdf_value = tr['value']
 
             res = BeautifulSoup(str(tr['onmouseover']).replace("return overlib('", "").replace("')", ""), "html.parser")
@@ -98,10 +98,11 @@ def parse_html(html_str, court_name):
             if reportable == 'No':
                 continue
 
-            if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                insert_check = True
+            # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+            #     insert_check = True
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 pdf_data = escape_string(request_pdf(case_no, court_name, pdf_value))
 
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \

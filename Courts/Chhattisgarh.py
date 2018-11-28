@@ -70,6 +70,11 @@ def parse_html(html_str, court_name):
         ul_soup = BeautifulSoup(str(ul), "html.parser")
         li_list = ul_soup.find_all('li')
 
+        # p_list = ul_soup.find_all('p')
+        # p_list = [x for x in p_list if "<p><font" not in str(x)]
+        # print(p_list)
+        # return
+
         for li in li_list:
             emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name +
                                                     "'")
@@ -84,16 +89,17 @@ def parse_html(html_str, court_name):
             judgment_date = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
-            if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                insert_check = True
+            # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+            #     insert_check = True
 
-                judgment_date = escape_string(case_no[-10:].replace('(', '').replace(')', ''))
-                pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
-                pdf_file = escape_string(base_url + a_link)
+            judgment_date = escape_string(case_no[-10:].replace('(', '').replace(')', ''))
+            pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+            pdf_file = escape_string(base_url + a_link)
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, judgment_date, pdf_file, pdf_filename) " \
                                                                "VALUE ('" + case_no + "', '" + judgment_date + "', '" \
                             + pdf_file + "', '" + court_name + "_" + slugify(case_no) + ".pdf')"
@@ -168,3 +174,7 @@ def main(court_name, start_date, end_date):
         start_date = (datetime.datetime.strptime(str(start_date), "%d/%m/%Y")).strftime('%Y')
         end_date = (datetime.datetime.strptime(str(end_date), "%d/%m/%Y")).strftime('%Y')
         return request_data(court_name, start_date, end_date)
+
+
+# fw = open("../Data_Files/Html_Files/test.html", "r")
+# parse_html(fw.read(), "Chhattisgarh")

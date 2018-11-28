@@ -85,7 +85,7 @@ def parse_html(html_str, court_name, bench, child_url):
             section = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -99,20 +99,21 @@ def parse_html(html_str, court_name, bench, child_url):
                 if i == 2:
                     date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
 
-                if select_count_query(str(court_name), str(case_no), 'date_of_order', date_of_order):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'date_of_order', date_of_order):
+                #     insert_check = True
 
-                    if i == 3:
-                        description = escape_string(str(td.text).strip())
-                        a_tag = BeautifulSoup(str(td), "html.parser").font.a
-                        pdf_url = base_url + child_url + a_tag.get('href')
-                        pdf_file = escape_string(pdf_url)
-                        pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
+                if i == 3:
+                    description = escape_string(str(td.text).strip())
+                    a_tag = BeautifulSoup(str(td), "html.parser").font.a
+                    pdf_url = base_url + child_url + a_tag.get('href')
+                    pdf_file = escape_string(pdf_url)
+                    pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
 
-                    if i == 4:
-                        section = str(td.text)
+                if i == 4:
+                    section = str(td.text)
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, date_of_order, description, section, " \
                                                                "pdf_file, bench_code, pdf_filename) VALUE ('" + \
                             case_no + "', '" + date_of_order + "', '" + description + "', '" + section + "', '" + \

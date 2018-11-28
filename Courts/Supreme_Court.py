@@ -150,8 +150,9 @@ def parse_html(html_str, court_name):
                     if td_count == 2:
                         judge_name = escape_string(str(td.decode_contents()))
 
-                if case_no != "NULL" and select_count_query(str(court_name), str(case_no), 'judgment_date',
-                                                            judgment_date):
+                # if case_no != "NULL" and select_count_query(str(court_name), str(case_no), 'judgment_date',
+                #                                             judgment_date):
+                if case_no != "NULL":
                     sql_query = "INSERT INTO " + str(court_name) + \
                                 " (diary_number, case_no, petitioner, respondent, petitioner_advocate, " \
                                 "respondent_advocate, judgment_date, bench, judge_name, pdf_file, pdf_filename) VALUE "\

@@ -93,7 +93,7 @@ def parse_html(html_str, court_name, bench_code):
             text = "NULL"
             text_file = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             table_soup = BeautifulSoup(str(table), "html.parser")
             td_list = table_soup.find_all('td')
@@ -111,22 +111,23 @@ def parse_html(html_str, court_name, bench_code):
                 if i == 6:
                     judgment_date = escape_string(str(td.decode_contents()))
 
-                if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                #     insert_check = True
 
-                    if i == 7:
-                        judge_name = escape_string(str(td.decode_contents()))
-                    if i == 8:
-                        a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
-                        text_dir = request_text(base_url + a_link, case_no, court_name)
-                        text = escape_string(text_dir['data'])
-                        text_file = escape_string(base_url + a_link)
-                    if i == 9:
-                        a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
-                        pdf_file = escape_string(base_url + a_link)
-                        pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
+                if i == 7:
+                    judge_name = escape_string(str(td.decode_contents()))
+                if i == 8:
+                    a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
+                    text_dir = request_text(base_url + a_link, case_no, court_name)
+                    text = escape_string(text_dir['data'])
+                    text_file = escape_string(base_url + a_link)
+                if i == 9:
+                    a_link = BeautifulSoup(str(td), "html.parser").a.get('href')
+                    pdf_file = escape_string(base_url + a_link)
+                    pdf_data = escape_string(request_pdf(base_url + a_link, case_no, court_name))
 
-            if case_no != "NULL" and insert_check and petitioner != 'Judgment Information System':
+            # if case_no != "NULL" and insert_check and petitioner != 'Judgment Information System':
+            if case_no != "NULL" and petitioner != 'Judgment Information System':
                 sql_query = "INSERT INTO " + str(court_name) + \
                             " (case_no, petitioner, respondent, judgment_date, judge_name, text_data, text_file, " \
                             "pdf_file, bench_code, pdf_filename) VALUE ('" + case_no + "', '" + petitioner + "', '" + \

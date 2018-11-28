@@ -95,7 +95,7 @@ def parse_html(html_str, court_name, bench):
                 if emergency_exit['emergency_exit'] == 1:
                     break
 
-            insert_check = False
+            # insert_check = False
             if tr_count == 1:
                 td_count = 0
                 tr_soup = BeautifulSoup(str(tr), "html.parser")
@@ -117,8 +117,8 @@ def parse_html(html_str, court_name, bench):
                         judgment_date = escape_string(td_text.replace("Judgement", "").replace("Orders", "")
                                                       .replace("r", "").replace("(AFR)", "").replace("NA", "").strip())
 
-            if select_count_query_bench(str(court_name), str(case_no), bench, 'judgment_date', judgment_date):
-                insert_check = True
+            # if select_count_query_bench(str(court_name), str(case_no), bench, 'judgment_date', judgment_date):
+            #     insert_check = True
 
             if tr_count == 2:
                 td_count = 0
@@ -174,7 +174,8 @@ def parse_html(html_str, court_name, bench):
                     if td_count == 3:
                         disposal_date = escape_string(str(td.text).strip())
 
-                if case_no != "NULL" and insert_check:
+                # if case_no != "NULL" and insert_check:
+                if case_no != "NULL":
                     sql_query = "INSERT INTO " + str(court_name) + \
                                 " (case_no, petitioner, respondent, petitioner_advocate, respondent_advocate, " \
                                 "judgment_date, disposal_date, bench, judge_name, pdf_file, pdf_filename)" \

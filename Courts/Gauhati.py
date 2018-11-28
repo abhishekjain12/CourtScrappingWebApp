@@ -139,7 +139,7 @@ def parse_html(html_str, court_name, flag):
             subject = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -160,9 +160,9 @@ def parse_html(html_str, court_name, flag):
                     pdf_file = escape_string(str(base_url + a_tag.get('href')))
                     case_no = escape_string(str(a_tag.text).replace("\n", "").strip())
 
-                    if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
-                        insert_check = True
-                        pdf_data = escape_string(request_pdf(str(base_url + a_tag.get('href')), case_no, court_name))
+                    # if select_count_query(str(court_name), str(case_no), 'judgment_date', judgment_date):
+                    #     insert_check = True
+                    pdf_data = escape_string(request_pdf(str(base_url + a_tag.get('href')), case_no, court_name))
 
                 if i == 4:
                     font_tag = BeautifulSoup(str(td), "html.parser").font
@@ -190,7 +190,8 @@ def parse_html(html_str, court_name, flag):
                     judge_name = re.sub(r'(\\x(.){2})', '', judge_name)
                     judge_name = re.sub(r'', '', judge_name, re.U)
 
-            if case_no != "NULL" and insert_check and td_list:
+            # if case_no != "NULL" and insert_check and td_list:
+            if case_no != "NULL" and td_list:
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, petitioner, respondent, judgment_date, " \
                                                                "subject, pdf_file, pdf_filename) VALUE ('" + case_no + \
                             "', '" + petitioner + "', '" + respondent + "', '" + judgment_date + "', '" + subject + \

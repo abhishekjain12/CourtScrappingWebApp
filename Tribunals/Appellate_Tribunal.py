@@ -97,7 +97,7 @@ def parse_html(html_str, court_name, appeal_type):
             respondent = "NULL"
             pdf_data = "NULL"
             pdf_file = "NULL"
-            insert_check = False
+            # insert_check = False
 
             tr_soup = BeautifulSoup(str(tr), "html.parser")
             td_list = tr_soup.find_all('td')
@@ -114,21 +114,22 @@ def parse_html(html_str, court_name, appeal_type):
                 if i == 3:
                     date_of_order = escape_string(str(td.text).strip().replace("\n", ""))
 
-                if select_count_query(str(court_name), str(case_no), 'date_of_order', date_of_order):
-                    insert_check = True
+                # if select_count_query(str(court_name), str(case_no), 'date_of_order', date_of_order):
+                #     insert_check = True
 
-                    if i == 4:
-                        party = str(td.decode_contents()).split("V/s")
-                        appellant = escape_string(str(party[0]))
-                        respondent = escape_string(str(party[1]))
+                if i == 4:
+                    party = str(td.decode_contents()).split("V/s")
+                    appellant = escape_string(str(party[0]))
+                    respondent = escape_string(str(party[1]))
 
-                    if i == 5:
-                        a_tag = BeautifulSoup(str(td), "html.parser").a
-                        pdf_url = str(base_url + a_tag.get('href')).replace('\\', '/')
-                        pdf_file = escape_string(pdf_url)
-                        pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
+                if i == 5:
+                    a_tag = BeautifulSoup(str(td), "html.parser").a
+                    pdf_url = str(base_url + a_tag.get('href')).replace('\\', '/')
+                    pdf_file = escape_string(pdf_url)
+                    pdf_data = escape_string(request_pdf(pdf_url, case_no, court_name))
 
-            if case_no != "NULL" and insert_check:
+            # if case_no != "NULL" and insert_check:
+            if case_no != "NULL":
                 sql_query = "INSERT INTO " + str(court_name) + " (case_no, date_of_order, appellant, respondent, " \
                                                                "pdf_file, appeal_type, pdf_filename) VALUE ('" + \
                             case_no + "', '" + date_of_order + "', '" + appellant + "', '" + respondent + "', '" + \
