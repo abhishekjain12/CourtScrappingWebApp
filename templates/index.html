@@ -23,13 +23,13 @@
     </div>
     <div class="nav-content">
       <ul class="tabs tabs-transparent tabs-fixed-width">
-        <li class="tab"><a class="active" href="#scrap">Scrapper</a></li>
+        <li class="tab"><a class="active" href="#new-scrap">New Scrapper</a></li>
+        <li class="tab"><a href="#new-tables-info">New Tables</a></li>
+        <li class="tab"><a href="#new-history">New History</a></li>
+        <li class="tab"><a href="#scrap">Scrapper</a></li>
         <li class="tab"><a href="#json-and-pdf">JSON & PDF</a></li>
         <li class="tab"><a href="#tables-info">Tables</a></li>
         <li class="tab"><a href="#history">History</a></li>
-        <li class="tab"><a href="#new-scrap">New Scrapper</a></li>
-        <li class="tab"><a href="#new-tables-info">New Tables</a></li>
-        <li class="tab"><a href="#new-history">New History</a></li>
       </ul>
     </div>
    </nav>
@@ -554,8 +554,7 @@
                               <tr>
                                   <th>CourtName</th>
                                   <th>Bench</th>
-                                  <th>StartDate</th>
-                                  <th>EndDate</th>
+                                  <th>Date</th>
                                   <th>#Tries</th>
                                   <th>TotalCases</th>
                                   <th>#InsertedCases</th>
@@ -592,8 +591,7 @@
                               <tr>
                                   <th>CourtName</th>
                                   <th>Bench</th>
-                                  <th>StartDate</th>
-                                  <th>EndDate</th>
+                                  <th>Date</th>
                                   <th>#Tries</th>
                                   <th>TotalCases</th>
                                   <th>#InsertedCases</th>
@@ -613,7 +611,6 @@
                               <tr>
                                 <td>{{ t_data['court_name'] | replace('_', " ") }}</td>
                                 <td>{{ t_data['bench'] | replace('_', " ") }}</td>
-                                <td>{{ t_data['start_date'] }}</td>
                                 <td>{{ t_data['end_date'] }}</td>
                                 <td>{{ t_data['no_tries'] }}</td>
                                 <td>{{ t_data['total_cases'] }}</td>
@@ -695,8 +692,7 @@
                               <tr>
                                   <th>CourtName</th>
                                   <th>Bench</th>
-                                  <th>StartDate</th>
-                                  <th>EndDate</th>
+                                  <th>Date</th>
                                   <th>#Tries</th>
                                   <th>TotalCases</th>
                                   <th>#InsertedCases</th>
@@ -717,7 +713,6 @@
                               <tr>
                                 <td>{{ t_data['court_name'] | replace('_', " ") }}</td>
                                 <td>{{ t_data['bench'] | replace('_', " ") }}</td>
-                                <td>{{ t_data['start_date'] }}</td>
                                 <td>{{ t_data['end_date'] }}</td>
                                 <td>{{ t_data['no_tries'] }}</td>
                                 <td>{{ t_data['total_cases'] }}</td>

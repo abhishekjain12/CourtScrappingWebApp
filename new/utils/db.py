@@ -36,12 +36,14 @@ def insert_query(sql, data=None):
         db.commit()
         cursor.close()
         db.close()
+        return True
 
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed insert query: %s", e)
         db.rollback()
         db.close()
+        return False
 
 
 def insert_local_query(sql, data=None):
