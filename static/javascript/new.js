@@ -80,7 +80,7 @@ $(document).ready(function() {
         l_btn.addClass("loading-btn");
 
         const court_name = $('#new-current-court').text();
-        const bench = $('#new-current-bench').text();
+        const bench = $('#new-bench').text();
 
          $.ajax({
             type: 'GET',
@@ -130,7 +130,8 @@ function current_new(court_name, bench) {
             else {
                 tr_list += "<tr>";
                 tr_list += "<td id='new-current-court'>" + data.court_name + "</td>";
-                tr_list += "<td id='new-current-bench'>" + data.bench + "</td>";
+                tr_list += "<td id='new-bench'>" + data.bench + "</td>";
+                tr_list += "<td>" + data.start_date + "</td>";
                 tr_list += "<td>" + data.end_date + "</td>";
                 tr_list += "<td>" + data.no_tries + "</td>";
                 tr_list += "<td>" + data.total_cases + "</td>";
@@ -189,7 +190,8 @@ function running_new() {
             else {
                 tr_list += "<tr>";
                 tr_list += "<td id='new-current-court'>" + data.court_name + "</td>";
-                tr_list += "<td id='new-current-bench'>" + data.bench + "</td>";
+                tr_list += "<td id='new-bench'>" + data.bench + "</td>";
+                tr_list += "<td>" + data.start_date + "</td>";
                 tr_list += "<td>" + data.end_date + "</td>";
                 tr_list += "<td>" + data.no_tries + "</td>";
                 tr_list += "<td>" + data.total_cases + "</td>";

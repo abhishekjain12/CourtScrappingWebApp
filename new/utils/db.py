@@ -8,11 +8,11 @@ module_directory = os.path.dirname(__file__)
 
 def db_connect():
     return pymysql.connect(
-        # host="localhost",
-        host="35.226.213.76",
+        host="localhost",
+        # host="35.226.213.76",
         user="root",
-        # password="root",
-        password="krypton212",
+        password="root",
+        # password="krypton212",
         db="new_courts_data",
         # charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
@@ -21,8 +21,8 @@ def db_connect():
 def db_local_connect():
     return pymysql.connect(host="localhost",
                            user="root",
-                           password="krypton212",
-                           # password="root",
+                           # password="krypton212",
+                           password="root",
                            db="new_courts_data",
                            # charset='utf8mb4',
                            cursorclass=pymysql.cursors.DictCursor)
@@ -36,14 +36,12 @@ def insert_query(sql, data=None):
         db.commit()
         cursor.close()
         db.close()
-        return True
 
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed insert query: %s", e)
         db.rollback()
         db.close()
-        return False
 
 
 def insert_local_query(sql, data=None):
@@ -218,9 +216,8 @@ def select_count_query(table_name, case_id, date_col, date_val):
         return False
 
 
-def update_history_tracker(court_name, bench):
-    r = select_one_local_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1",
-                               (court_name, bench))
+def update_history_tracker(court_name):
+    r = select_one_local_query("SELECT * FROM tracker WHERE court_name='" + court_name + "' ORDER BY id LIMIT 1")
     insert_query("INSERT INTO tracker_history (court_name, bench, start_date, end_date, no_tries, total_cases, "
                  "inserted_cases, no_nodata, no_alerts, no_pdf, no_text, no_json, transferred_pdf, transferred_text, "
                  "transferred_json, emergency_exit, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
