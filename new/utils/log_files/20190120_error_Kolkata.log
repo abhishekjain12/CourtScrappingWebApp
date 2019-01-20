@@ -1,0 +1,13 @@
+ERROR    - 2019-01-20 18:11:41,237 [db.py][update_query]  Failed update query: (1406, "Data too long for column 'text_data' at row 1")
+ERROR    - 2019-01-20 18:55:33,157 [db.py][update_local_query]  Failed update query: not enough arguments for format string
+ERROR    - 2019-01-20 19:40:10,188 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 19:53:01,647 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 19:53:01,647 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 19:53:01,647 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 19:53:01,647 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 21:48:47,560 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 21:54:15,139 [db.py][update_query]  Failed update query: (1366, "Incorrect string value: '\\xE2\\x80\\x90Kot...' for column 'text_data' at row 76")
+ERROR    - 2019-01-20 21:54:46,382 [db.py][update_query]  Failed update query: (1366, "Incorrect string value: '\\xE2\\x80\\x90rec...' for column 'text_data' at row 91")
+ERROR    - 2019-01-20 21:54:52,229 [db.py][update_query]  Failed update query: (1366, "Incorrect string value: '\\xE2\\x80\\x90Vs\\xE2...' for column 'text_data' at row 93")
+ERROR    - 2019-01-20 21:59:06,598 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
+ERROR    - 2019-01-20 21:59:06,598 [kolkata.py][request_data]  Failed to request: 'NoneType' object is not subscriptable

@@ -40,11 +40,12 @@ $(document).ready(function() {
              l_btn.addClass("loading-btn");
 
              const court_name = $('#new-court-name').val();
+             const bench = $('#new-bench').val();
 
              $.ajax({
                  type: 'POST',
                  url: '/new/start-scrap',
-                 data: "court_name=" + court_name + "&bench=" + $('#bench-s').val(),
+                 data: "court_name=" + court_name + "&bench=" + bench,
                  success: function () {
                      Materialize.toast("Scrapping started!", 2000, 'light-green');
 
@@ -54,7 +55,7 @@ $(document).ready(function() {
              });
 
              setTimeout(function () {
-                 current_new(court_name);
+                 current_new(court_name, bench);
                  l_btn.removeClass("loading-btn");
                  se_btn.removeClass("d-none");
                  s_btn.removeClass("disabled");
@@ -63,7 +64,7 @@ $(document).ready(function() {
              }, 2000);
 
              new_interval = setInterval(function () {
-                             current_new(court_name);
+                             current_new(court_name, bench);
                          }, 10000);
          }
      });
@@ -79,10 +80,11 @@ $(document).ready(function() {
         l_btn.addClass("loading-btn");
 
         const court_name = $('#new-current-court').text();
+        const bench = $('#new-bench').text();
 
          $.ajax({
             type: 'GET',
-            url: '/new/cancel-scrap/' + court_name,
+            url: '/new/cancel-scrap/' + court_name + '/' + bench,
             success: function () {
                 Materialize.toast("Scrapping Aborted!", 2000, 'light-green');
                 l_btn.removeClass("loading-btn");
@@ -104,14 +106,14 @@ $(document).ready(function() {
 
 });
 
-function current_new(court_name) {
+function current_new(court_name, bench) {
      const s_btn = $("#new-submit-btn");
      const l_btn = $("#new-btn-loading");
      const se_btn = $("#new-btn-send");
 
      $.ajax({
         type: 'GET',
-        url: '/new/current-scrap/' + court_name,
+        url: '/new/current-scrap/' + court_name + "/" + bench,
         success: function (data) {
             let tr_list = "";
 
@@ -128,7 +130,7 @@ function current_new(court_name) {
             else {
                 tr_list += "<tr>";
                 tr_list += "<td id='new-current-court'>" + data.court_name + "</td>";
-                tr_list += "<td>" + data.bench + "</td>";
+                tr_list += "<td id='new-bench'>" + data.bench + "</td>";
                 tr_list += "<td>" + data.start_date + "</td>";
                 tr_list += "<td>" + data.end_date + "</td>";
                 tr_list += "<td>" + data.no_tries + "</td>";
@@ -188,7 +190,7 @@ function running_new() {
             else {
                 tr_list += "<tr>";
                 tr_list += "<td id='new-current-court'>" + data.court_name + "</td>";
-                tr_list += "<td>" + data.bench + "</td>";
+                tr_list += "<td id='new-bench'>" + data.bench + "</td>";
                 tr_list += "<td>" + data.start_date + "</td>";
                 tr_list += "<td>" + data.end_date + "</td>";
                 tr_list += "<td>" + data.no_tries + "</td>";

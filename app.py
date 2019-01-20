@@ -7,13 +7,14 @@ from random import randint
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 
+import new
 from Utils import logs
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
 from Utils.db import select_query, select_json_query, get_tables_info, update_history_tracker, \
     download_pdf_to_bucket, select_local_query, update_local_query, select_one_local_query
 from common import transfer_to_bucket, pdf_to_text_api, court_pdfname
-from new.utils import db as new_db
+from new.utils import db as new_db, new_controller, new_metadata
 
 app = Flask(__name__)
 module_directory = os.path.dirname(__file__)
@@ -223,12 +224,27 @@ def pdf_to_text_api_route():
 def new_start_scrap():
     court_name = request.form['court_name']
     bench = request.form['bench']
-    return jsonify('')
+
+    new_db.update_local_query("UPDATE tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
+    new_db.update_local_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0 "
+                              "WHERE court_name=%s and bench=%s", (court_name, bench))
+
+    res = new_controller.court_controller(court_name, bench)
+
+    if res:
+        new_db.update_local_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
+                                  "WHERE court_name=%s and bench=%s", (court_name, bench))
+    else:
+        new_db.update_local_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
+                                  "WHERE court_name=%s and bench=%s", (court_name, bench))
+
+    return 'Done'
 
 
-@app.route('/new/current-scrap/<string:court_name>')
-def new_current_scrap(court_name):
-    return jsonify(new_db.select_one_local_query("SELECT * FROM tracker WHERE court_name = '" + court_name + "'"))
+@app.route('/new/current-scrap/<string:court_name>/<string:bench>')
+def new_current_scrap(court_name, bench):
+    return jsonify(new_db.select_one_local_query("SELECT * FROM tracker "
+                                                 "WHERE court_name=%s and bench=%s", (court_name, bench)))
 
 
 @app.route('/new/running-scrap')
@@ -236,10 +252,19 @@ def new_running_scrap():
     return jsonify(new_db.select_one_local_query("SELECT * FROM tracker WHERE status = 'IN_RUNNING' LIMIT 1"))
 
 
-@app.route('/new/cancel-scrap/<string:court_name>')
-def new_cancel_scrap(court_name):
-    return jsonify(new_db.update_local_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true"
-                                             " WHERE court_name='" + court_name + "'"))
+@app.route('/new/cancel-scrap/<string:court_name>/<string:bench>')
+def new_cancel_scrap(court_name, bench):
+    return jsonify(new_db.update_local_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
+                                             "WHERE court_name=%s and bench=%s", (court_name, bench)))
+
+
+@app.route('/new/get-bench-list/<string:court_name>')
+def new_get_bench_list(court_name):
+    for court_data in new_metadata.metadata:
+        if court_data['court_name'] == court_name:
+            return jsonify(court_data['bench'])
+
+    return 'Internal Server Error.', 500
 
 
 if __name__ == '__main__':
