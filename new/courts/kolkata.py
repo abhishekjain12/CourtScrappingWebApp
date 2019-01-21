@@ -143,7 +143,7 @@ def request_data(base_url, court_name, bench_id):
             emergency_exit = select_one_local_query("SELECT emergency_exit FROM tracker WHERE court_name=%s "
                                                     "and bench=%s", (court_name, bench_id))
             if emergency_exit['emergency_exit'] == 1:
-                update_history_tracker(court_name)
+                update_history_tracker(court_name, bench_id)
                 return True
 
             update_local_query("UPDATE tracker SET no_tries=0, no_alerts=0 WHERE court_name=%s and bench=%s",
@@ -159,7 +159,11 @@ def request_data(base_url, court_name, bench_id):
 
                 if response['error'] == 0 and "data_errors" not in response:
                     parser(base_url, court_name, bench_id, response['find_data'])
-                    break
+                    check_cases = select_one_local_query("SELECT total_cases, inserted_cases FROM tracker "
+                                                         "WHERE court_name=%s AND bench=%s", (court_name, bench_id))
+
+                    if check_cases['total_cases'] == check_cases['inserted_cases']:
+                        break
 
                 if response['error'] == 1 and response['data_errors'] == 0 and no_tries == NO_TRIES:
                     update_local_query("UPDATE tracker SET no_nodata=no_nodata+1 WHERE court_name=%s and bench=%s",
@@ -177,6 +181,7 @@ def request_data(base_url, court_name, bench_id):
 
             update_local_query("UPDATE tracker SET end_date=%s WHERE court_name=%s and bench=%s",
                                (start_date, court_name, bench_id))
+            update_history_tracker(court_name, bench_id)
             start_date = (datetime.datetime.strptime(str(start_date), "%Y-%m-%d") + datetime.timedelta(days=DAYS)
                           ).strftime("%Y-%m-%d")
 
