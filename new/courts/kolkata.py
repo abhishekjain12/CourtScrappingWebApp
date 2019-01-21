@@ -49,7 +49,7 @@ def request_pdf(url, jud_pdf_name, court_name, bench_id, case_id):
 def parser(base_url, court_name, bench_id, response):
     pdf_base_path = base_url + 'viewpdf/'
 
-    update_local_query("UPDATE tracker SET total_cases=%s WHERE court_name=%s and bench=%s",
+    update_local_query("UPDATE tracker SET total_cases=%s, inserted_cases=0 WHERE court_name=%s and bench=%s",
                        (str(len(response)), court_name, bench_id))
 
     for case in response:
@@ -121,6 +121,9 @@ def parser(base_url, court_name, bench_id, response):
                                    "(%s, %s, %s, %s)", (court_name, bench_id, case_id, 'Failed to transfer to bucket.'))
                 update_local_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
                                    (court_name, bench_id))
+        else:
+            update_local_query("UPDATE tracker SET inserted_cases=inserted_cases+1 WHERE court_name=%s "
+                               "and bench=%s", (court_name, bench_id))
 
 
 def request_data(base_url, court_name, bench_id):
