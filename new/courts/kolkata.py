@@ -89,6 +89,9 @@ def parser(base_url, court_name, bench_id, response):
             else:
                 update_local_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
                                    (court_name, bench_id))
+                insert_local_query("INSERT INTO alerts (court_name, bench, case_id, error_message) VALUES "
+                                   "(%s, %s, %s, %s)", (court_name, bench_id, case_id,
+                                                        'Failed to insert court data in table'))
 
             if update_query("UPDATE kolkata SET text_data=%s WHERE case_id=%s", (pdf_text_data, case_id)):
                 update_local_query("UPDATE tracker SET no_text=no_text+1 WHERE court_name=%s and bench=%s",
