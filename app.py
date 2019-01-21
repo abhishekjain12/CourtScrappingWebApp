@@ -7,12 +7,11 @@ from random import randint
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 
-import new
 from Utils import logs
 from Utils.CourtMetaData import metadata
 from Utils.court_controller import court_controller
-from Utils.db import select_query, select_json_query, get_tables_info, update_history_tracker, \
-    download_pdf_to_bucket, select_local_query, update_local_query, select_one_local_query
+from Utils.db import select_json_query, get_tables_info, update_history_tracker, download_pdf_to_bucket, \
+    select_query, update_query, select_one_query
 from common import transfer_to_bucket, pdf_to_text_api, court_pdfname
 from new.utils import db as new_db, new_controller, new_metadata
 from new.utils.json_utils import create_transfer_json
@@ -23,13 +22,13 @@ module_directory = os.path.dirname(__file__)
 
 @app.route('/')
 def index():
-    tracker_data = select_local_query("SELECT * FROM Tracker")
+    tracker_data = select_query("SELECT * FROM Tracker")
     tracker_history = select_query("SELECT * FROM Tracker_History ORDER BY id DESC LIMIT 100")
     tracker_json_history = select_query("SELECT * FROM Tracker_History_JSON ORDER BY id DESC LIMIT 100")
     tables = select_query("SHOW TABLES")
     table_info = get_tables_info()
 
-    new_tracker_data = new_db.select_local_query("SELECT * FROM new_courts_data.tracker")
+    new_tracker_data = new_db.select_query("SELECT * FROM new_courts_data.tracker")
     new_tables = new_db.select_query("SHOW TABLES")
     new_table_info = new_db.get_tables_info()
     new_tracker_history = new_db.select_query("SELECT * FROM tracker_history ORDER BY id DESC LIMIT 100")
@@ -65,13 +64,13 @@ def start_scrap():
     start_date = request.form['start_date']
     end_date = request.form['end_date']
 
-    update_local_query("UPDATE Tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
-    update_local_query("UPDATE Tracker SET status='IN_RUNNING', emergency_exit=false, No_Cases=0, No_Year_NoData=0, "
-                       "No_Year_Error=0, No_Error=0, Start_Date='" + start_date + "', End_Date='" + end_date +
-                       "', bench='" + str(bench) + "' WHERE Name='" + court_name + "'")
+    update_query("UPDATE Tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
+    update_query("UPDATE Tracker SET status='IN_RUNNING', emergency_exit=false, No_Cases=0, No_Year_NoData=0, "
+                 "No_Year_Error=0, No_Error=0, Start_Date='" + start_date + "', End_Date='" + end_date + "', bench='"
+                 + str(bench) + "' WHERE Name='" + court_name + "'")
 
     res = court_controller(court_name, bench, start_date, end_date)
-    update_local_query("UPDATE Tracker SET status = 'IN_BUCKET_TRANSFER' WHERE Name = '" + str(court_name) + "'")
+    update_query("UPDATE Tracker SET status = 'IN_BUCKET_TRANSFER' WHERE Name = '" + str(court_name) + "'")
 
     for filename in glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/PDF_Files/" + str(court_name) + "*.pdf"):
         if transfer_to_bucket('PDF_Files', filename):
@@ -82,11 +81,11 @@ def start_scrap():
             os.remove(filename)
 
     if res:
-        update_local_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
-                           str(court_name) + "'")
+        update_query("UPDATE Tracker SET status = 'IN_SUCCESS', emergency_exit=true WHERE Name = '" +
+                     str(court_name) + "'")
     else:
-        update_local_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED', "
-                           "emergency_exit=true WHERE Name = '" + str(court_name) + "'")
+        update_query("UPDATE Tracker SET No_Year_Error = No_Year_Error + 1, status = 'IN_FAILED', "
+                     "emergency_exit=true WHERE Name = '" + str(court_name) + "'")
 
     update_history_tracker(court_name)
     return jsonify(res)
@@ -94,18 +93,18 @@ def start_scrap():
 
 @app.route('/current-scrap/<string:court_name>')
 def current_scrap(court_name):
-    return jsonify(select_one_local_query("SELECT * FROM Tracker WHERE Name = '" + court_name + "'"))
+    return jsonify(select_one_query("SELECT * FROM Tracker WHERE Name = '" + court_name + "'"))
 
 
 @app.route('/running-scrap')
 def running_scrap():
-    return jsonify(select_one_local_query("SELECT * FROM Tracker WHERE status = 'IN_RUNNING' LIMIT 1"))
+    return jsonify(select_one_query("SELECT * FROM Tracker WHERE status = 'IN_RUNNING' LIMIT 1"))
 
 
 @app.route('/cancel-scrap/<string:court_name>')
 def cancel_scrap(court_name):
-    return jsonify(update_local_query("UPDATE Tracker SET status='IN_ABORT', emergency_exit=true WHERE Name='" +
-                                      court_name + "'"))
+    return jsonify(update_query("UPDATE Tracker SET status='IN_ABORT', emergency_exit=true WHERE Name='" +
+                                court_name + "'"))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -115,8 +114,8 @@ def cancel_scrap(court_name):
 def start_pdf():
     logs.initialize_logger("PDF")
     court_name = request.form['court_name']
-    update_local_query("UPDATE Tracker_pdf SET status='IN_RUNNING', emergency_exit=false, Name='" + court_name +
-                       "', No_Files=0 WHERE 1")
+    update_query("UPDATE Tracker_pdf SET status='IN_RUNNING', emergency_exit=false, Name='" + court_name +
+                 "', No_Files=0 WHERE 1")
     court_pdfname(court_name)
     download_pdf_to_bucket(court_name)
     return '', 200
@@ -124,12 +123,12 @@ def start_pdf():
 
 @app.route('/current-pdf')
 def current_pdf():
-    return jsonify(select_one_local_query("SELECT Name, No_Files, status FROM Tracker_pdf LIMIT 1"))
+    return jsonify(select_one_query("SELECT Name, No_Files, status FROM Tracker_pdf LIMIT 1"))
 
 
 @app.route('/cancel-pdf')
 def cancel_pdf():
-    return jsonify(update_local_query("UPDATE Tracker_pdf SET status='IN_ABORT', emergency_exit=true WHERE 1"))
+    return jsonify(update_query("UPDATE Tracker_pdf SET status='IN_ABORT', emergency_exit=true WHERE 1"))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -147,7 +146,7 @@ def start_json():
             end_date = (datetime.datetime.strptime(str(end_date), "%d/%m/%Y")).strftime(data['o_date_format'])
             break
 
-    update_local_query("UPDATE Tracker_JSON SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
+    update_query("UPDATE Tracker_JSON SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
     if select_json_query(court_name, start_date, end_date):
 
         for filename in glob("/home/karaa_krypt/CourtScrappingWebApp/Data_Files/JSON_Files/*.json"):
@@ -161,26 +160,24 @@ def start_json():
 
 @app.route('/current-json/<string:court_name>')
 def current_json(court_name):
-    return jsonify(select_one_local_query("SELECT * FROM Tracker_JSON WHERE Name = '" + court_name + "' ORDER BY id "
-                                                                                                     "DESC LIMIT 1"))
+    return jsonify(select_one_query("SELECT * FROM Tracker_JSON WHERE Name = '" + court_name + "' ORDER BY id "
+                                                                                               "DESC LIMIT 1"))
 
 
 @app.route('/running-json')
 def running_json():
-    return jsonify(select_one_local_query("SELECT * FROM Tracker_JSON WHERE status = 'IN_RUNNING' ORDER BY id "
-                                          "DESC LIMIT 1"))
+    return jsonify(select_one_query("SELECT * FROM Tracker_JSON WHERE status = 'IN_RUNNING' ORDER BY id DESC LIMIT 1"))
 
 
 @app.route('/cancel-json/<string:court_name>')
 def cancel_json(court_name):
-    return jsonify(update_local_query("UPDATE Tracker_JSON SET status='IN_ABORT', emergency_exit=true WHERE Name='" +
-                                      court_name + "'"))
+    return jsonify(update_query("UPDATE Tracker_JSON SET status='IN_ABORT', emergency_exit=true WHERE Name='" +
+                                court_name + "'"))
 
 
 @app.route('/get-json/<string:court_name>')
 def get_json(court_name):
     res = {'Name': []}
-
     for file_ in glob(module_directory + "/Data_Files/JSON_Files/" + court_name + "*.json"):
         res['Name'].append(file_[file_.rfind("/")+1:])
 
@@ -226,18 +223,18 @@ def new_start_scrap():
     court_name = request.form['court_name']
     bench = request.form['bench']
 
-    new_db.update_local_query("UPDATE tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
-    new_db.update_local_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0,"
-                              "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
-                              "transferred_text=0 WHERE court_name=%s and bench=%s", (court_name, bench))
+    new_db.update_query("UPDATE tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
+    new_db.update_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0,"
+                        "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
+                        "transferred_text=0 WHERE court_name=%s and bench=%s", (court_name, bench))
 
     res = new_controller.court_controller(court_name, bench)
     if res:
-        new_db.update_local_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
-                                  "WHERE court_name=%s and bench=%s", (court_name, bench))
+        new_db.update_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
+                            "WHERE court_name=%s and bench=%s", (court_name, bench))
     else:
-        new_db.update_local_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
-                                  "WHERE court_name=%s and bench=%s", (court_name, bench))
+        new_db.update_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
+                            "WHERE court_name=%s and bench=%s", (court_name, bench))
 
     create_transfer_json(court_name, bench)
     return 'Done'
@@ -245,19 +242,19 @@ def new_start_scrap():
 
 @app.route('/new/current-scrap/<string:court_name>/<string:bench>')
 def new_current_scrap(court_name, bench):
-    return jsonify(new_db.select_one_local_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s",
-                                                 (court_name, bench)))
+    return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s",
+                                           (court_name, bench)))
 
 
 @app.route('/new/running-scrap')
 def new_running_scrap():
-    return jsonify(new_db.select_one_local_query("SELECT * FROM tracker WHERE status = 'IN_RUNNING' LIMIT 1"))
+    return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE status = 'IN_RUNNING' LIMIT 1"))
 
 
 @app.route('/new/cancel-scrap/<string:court_name>/<string:bench>')
 def new_cancel_scrap(court_name, bench):
-    return jsonify(new_db.update_local_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
-                                             "WHERE court_name=%s and bench=%s", (court_name, bench)))
+    return jsonify(new_db.update_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
+                                       "WHERE court_name=%s and bench=%s", (court_name, bench)))
 
 
 @app.route('/new/get-bench-list/<string:court_name>')

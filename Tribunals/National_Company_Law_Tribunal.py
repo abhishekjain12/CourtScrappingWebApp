@@ -13,8 +13,7 @@ from bs4 import BeautifulSoup
 from pymysql import escape_string
 from slugify import slugify
 from Utils import logs
-from Utils.db import insert_query, update_query, update_history_tracker, select_count_query, \
-    select_one_local_query, update_local_query
+from Utils.db import insert_query, update_history_tracker, select_one_query, update_query
 from Utils.my_proxy import proxy_dict
 
 
@@ -69,8 +68,7 @@ def parse_html(html_str, court_name, bench, child_url):
         tr_count = 0
         for tr in tr_list:
 
-            emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name +
-                                                    "'")
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
             if emergency_exit is not None:
                 if emergency_exit['emergency_exit'] == 1:
                     break
@@ -122,14 +120,14 @@ def parse_html(html_str, court_name, bench, child_url):
 
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
                              str(case_no) + "'")
-                update_local_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
+                update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
 
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
-        update_local_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
+        update_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
 
 
@@ -138,8 +136,8 @@ def request_data(court_name, bench, start_date, end_date_):
         for year in range(start_date, end_date_ + 1):
             if int(year) < 2010 or int(year) > 2016:
                 logging.error("NO data Found for start date: " + str(start_date))
-                update_local_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
-                                   str(court_name) + "'")
+                update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                             str(court_name) + "'")
                 continue
 
             section_types = ['111_111_A', '397_398', 'Others']
@@ -148,22 +146,22 @@ def request_data(court_name, bench, start_date, end_date_):
                 child_url = str(bench) + '/' + str(year) + '/' + str(section_type) + '/'
                 url = base_url + child_url + 'index.html'
 
-                emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" +
-                                                        court_name + "'")
+                emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" +
+                                                  court_name + "'")
                 if emergency_exit['emergency_exit'] == 1:
                     update_history_tracker(court_name)
                     return True
 
-                update_local_query("UPDATE Tracker SET Start_Date = '" + str(year) + "', End_Date = '" + str(year) +
-                                   "' WHERE Name = '" + str(court_name) + "'")
+                update_query("UPDATE Tracker SET Start_Date = '" + str(year) + "', End_Date = '" + str(year) +
+                             "' WHERE Name = '" + str(court_name) + "'")
 
                 response = requests.request("GET", url, proxies=proxy_dict)
                 res = response.text
 
                 if res is None:
                     logging.error("NO data Found for year: " + str(year))
-                    update_local_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
-                                       str(court_name) + "'")
+                    update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                                 str(court_name) + "'")
                     continue
 
                 if not parse_html(res, court_name, bench, child_url):

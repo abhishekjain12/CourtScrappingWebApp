@@ -16,8 +16,7 @@ from pymysql import escape_string
 from slugify import slugify
 
 from Utils import logs
-from Utils.db import insert_query, update_query, update_history_tracker, select_count_query, \
-    select_one_local_query, update_local_query
+from Utils.db import insert_query, update_history_tracker, select_one_query, update_query
 from Utils.my_proxy import proxy_dict
 
 module_directory = os.path.dirname(__file__)
@@ -121,8 +120,7 @@ def parse_html(html_str, court_name, flag):
 
         tr_count = 0
         for tr in tr_list:
-            emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name +
-                                                    "'")
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
             if emergency_exit is not None:
                 if emergency_exit['emergency_exit'] == 1:
                     break
@@ -202,14 +200,14 @@ def parse_html(html_str, court_name, flag):
                              str(case_no) + "'")
                 update_query("UPDATE " + court_name + " SET pdf_data = '" + str(pdf_data) + "' WHERE case_no = '" +
                              str(case_no) + "'")
-                update_local_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
+                update_query("UPDATE Tracker SET No_Cases = No_Cases + 1 WHERE Name = '" + str(court_name) + "'")
 
         return True
 
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
-        update_local_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
+        update_query("UPDATE Tracker SET No_Error = No_Error + 1 WHERE Name = '" + str(court_name) + "'")
         return False
 
 
@@ -220,8 +218,8 @@ def request_data(court_name, start_date, end_date_):
         }
 
         if int(start_date[-2:]) < 10:
-            update_local_query("UPDATE Tracker SET status = 'IN_NO_DATA_FOUND', emergency_exit=true WHERE Name = '" +
-                               str(court_name) + "'")
+            update_query("UPDATE Tracker SET status = 'IN_NO_DATA_FOUND', emergency_exit=true WHERE Name = '" +
+                         str(court_name) + "'")
             if int(end_date_[-2:]) < 10:
                 update_history_tracker(court_name)
                 return True
@@ -229,16 +227,15 @@ def request_data(court_name, start_date, end_date_):
         for month_year in month_list_([str(start_date), str(end_date_)]):
             month_year = date_fix(month_year)
 
-            emergency_exit = select_one_local_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name +
-                                                    "'")
+            emergency_exit = select_one_query("SELECT emergency_exit FROM Tracker WHERE Name='" + court_name + "'")
             if emergency_exit['emergency_exit'] == 1:
                 update_history_tracker(court_name)
                 return True
 
             url = base_url + "JDMT" + str(month_year) + ".html"
 
-            update_local_query("UPDATE Tracker SET Start_Date = '" + str(month_year) + "', End_Date = '" +
-                               str(end_date_) + "' WHERE Name = '" + str(court_name) + "'")
+            update_query("UPDATE Tracker SET Start_Date = '" + str(month_year) + "', End_Date = '" +
+                         str(end_date_) + "' WHERE Name = '" + str(court_name) + "'")
 
             response = requests.request("GET", url, headers=headers, proxies=proxy_dict)
             res = response.text
@@ -246,8 +243,8 @@ def request_data(court_name, start_date, end_date_):
             if "file or directory not found" in res.upper():
                 logging.error("NO data Found for start date: " + str(month_year))
 
-                update_local_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
-                                   str(court_name) + "'")
+                update_query("UPDATE Tracker SET No_Year_NoData = No_Year_NoData + 1 WHERE Name = '" +
+                             str(court_name) + "'")
 
                 continue
 
