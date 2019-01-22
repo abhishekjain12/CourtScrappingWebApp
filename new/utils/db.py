@@ -138,6 +138,7 @@ def select_count_query(table_name, case_id, date_col, date_val):
 def update_history_tracker(court_name, bench):
     r = select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1",
                          (court_name, bench))
+
     insert_query("INSERT INTO tracker_history (court_name, bench, start_date, end_date, no_tries, total_cases, "
                  "inserted_cases, no_nodata, no_alerts, no_pdf, no_text, no_json, transferred_pdf, transferred_text, "
                  "transferred_json, emergency_exit, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
