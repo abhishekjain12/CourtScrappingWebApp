@@ -47,7 +47,7 @@ def request_pdf(url, jud_pdf_name, court_name, bench_id, case_id):
         return None
 
 
-def parser(base_url, court_name, bench_id, response):
+def parser(base_url, court_name, page_no, response):
     pdf_base_path = base_url + 'viewpdf/'
 
     update_local_query("UPDATE tracker SET total_cases=%s WHERE court_name=%s and bench=%s",
@@ -144,8 +144,8 @@ def request_data(base_url, court_name):
         }
 
         response = requests.request("GET", url, headers=headers, proxies=proxy_dict)
-
-        soup = BeautifulSoup(response.text, "html.parser")
+        response = response.text
+        soup = BeautifulSoup(response, "html.parser")
 
         last_page_li = soup.find_all("li", class_="pager-last last")  # getting last page_ no depends on css so if court
                                                                         # site change this can be a problem
@@ -156,6 +156,13 @@ def request_data(base_url, court_name):
         last_page_no = int(str(last_page_link['href'])[str(last_page_link['href']).find('=') + 1:])
 
         while page_no <= last_page_no:
+            update_local_query("UPDATE tracker SET page_no=%s WHERE court_name=%s", (page_no, court_name))
+            no_tries = select_one_query("SELECT no_tries FROM tracker WHERE court_name=%s",
+                                        court_name)['no_tries']
+
+            while no_tries <= NO_TRIES:
+                parser(base_url, court_name, page_no, response)
+
             page_no += 1
 
         # total_pages =
