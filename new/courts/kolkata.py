@@ -47,8 +47,8 @@ def request_pdf(url, jud_pdf_name, court_name, bench_id, case_id):
 def parser(base_url, court_name, bench_id, response):
     pdf_base_path = base_url + 'viewpdf/'
 
-    update_query("UPDATE tracker SET total_cases=%s, inserted_cases=0 WHERE court_name=%s and bench=%s",
-                 (str(len(response)), court_name, bench_id))
+    update_query("UPDATE tracker SET total_cases=%s, inserted_cases=0, no_pdf=0, no_text=0, transferred_pdf=0,"
+                 "transferred_text=0 WHERE court_name=%s and bench=%s", (str(len(response)), court_name, bench_id))
 
     for case in response:
         emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s and bench=%s",
