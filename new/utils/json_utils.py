@@ -5,12 +5,12 @@ import traceback
 from math import floor
 
 from new.utils.bucket import transfer_to_bucket
-from new.utils.db import db_connect, select_one_query, update_query, update_query, insert_query
+from new.utils.db import db_connect, select_one_query, update_query, insert_query
 
 module_directory = os.path.dirname(__file__)
 
 
-def create_transfer_json(court_name, bench):
+def create_transfer_json_bench(court_name, bench):
     db = db_connect()
     try:
         cursor = db.cursor()
@@ -44,7 +44,7 @@ def create_transfer_json(court_name, bench):
 
                     update_query("UPDATE tracker SET no_json=no_json+1 WHERE court_name=%s", (court_name))
                     update_query("UPDATE tracker SET transferred_json=transferred_json+1 "
-                                       "WHERE court_name=%s and bench=%s", (court_name, bench))
+                                 "WHERE court_name=%s and bench=%s", (court_name, bench))
                     os.remove(file_path)
                 else:
                     insert_query("INSERT INTO alerts (court_name, bench, error_message) VALUES (%s, %s, %s)",
@@ -60,6 +60,58 @@ def create_transfer_json(court_name, bench):
                      (court_name, bench, 'JSON Error'))
         update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
                      (court_name, bench))
+        traceback.print_exc()
+        logging.error("Failed select query: %s", e)
+        db.close()
+        return False
+
+
+def create_transfer_json(court_name):
+    db = db_connect()
+    try:
+        cursor = db.cursor()
+        cursor.execute("select count(id) as num_rows from " + str(court_name) + " WHERE is_json=0")
+        result = cursor.fetchall()
+        cursor.close()
+        no_rows = result[0]['num_rows']
+
+        no_of_data_per_iteration = 1000
+        no_of_iteration = floor(int(no_rows) / no_of_data_per_iteration) + 1
+
+        j_count = select_one_query("SELECT no_json FROM tracker WHERE court_name=%s", (court_name))['no_json']
+
+        for i in range(0, no_of_iteration):
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM " + str(court_name) + " WHERE is_json=0 LIMIT " +
+                           str(no_of_data_per_iteration) + " OFFSET " + str(i * no_of_data_per_iteration))
+            result = cursor.fetchall()
+            cursor.close()
+
+            if result:
+                file_path = module_directory + "/../data_files/json_files/new-" + str(court_name) + "-" + str(
+                    i + 1 + j_count) + ".json"
+                fw = open(file_path, "w")
+                fw.write(json.dumps(result))
+
+                if transfer_to_bucket('JSON_Files', file_path):
+                    for record in result:
+                        update_query("UPDATE " + court_name + " SET is_json=1 WHERE id='" + str(record['id']) + "'")
+
+                    update_query("UPDATE tracker SET no_json=no_json+1 WHERE court_name=%s", (court_name))
+                    update_query("UPDATE tracker SET transferred_json=transferred_json+1 WHERE court_name=%s",
+                                 (court_name))
+                    os.remove(file_path)
+                else:
+                    insert_query("INSERT INTO alerts (court_name, error_message) VALUES (%s, %s)",
+                                 (court_name, 'JSON Failed to transfer to bucket.'))
+                    update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
+
+        db.close()
+        return True
+
+    except Exception as e:
+        insert_query("INSERT INTO alerts (court_name, error_message) VALUES (%s, %s)", (court_name, 'JSON Error'))
+        update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
         traceback.print_exc()
         logging.error("Failed select query: %s", e)
         db.close()

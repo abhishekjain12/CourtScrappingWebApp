@@ -80,7 +80,8 @@ def parser(base_url, court_name, bench_id, response):
             if insert_query(
                     "INSERT INTO kolkata (case_id, judgment_date, pdf_url, pdf_filename, text_filename, case_type, "
                     "case_no, case_year, bench) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                    (case_id, jud_dt, pdf_url, jud_pdf_name, jud_pdf_name, case_type, case_no, case_yr, bench_id)):
+                    (case_id, jud_dt, pdf_url, jud_pdf_name, jud_pdf_name.replace('.pdf', '.txt'), case_type, case_no,
+                     case_yr, bench_id)):
 
                 update_query("UPDATE tracker SET inserted_cases=inserted_cases+1 WHERE court_name=%s and bench=%s",
                              (court_name, bench_id))

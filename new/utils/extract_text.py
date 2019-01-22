@@ -25,4 +25,4 @@ def pdf_to_text_api(file_path):
     except Exception as e:
         traceback.print_exc()
         logging.error("Failed to parse the html: %s", e)
-        return "FAILED"
+        return None

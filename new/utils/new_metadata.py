@@ -17,4 +17,9 @@ metadata = [
             }
         ],
     },
+    {
+        'court_name': "gst_appellate",
+        'file_name': "gst_appellate",
+        'bench': None,
+    },
 ]

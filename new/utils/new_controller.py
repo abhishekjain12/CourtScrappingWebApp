@@ -1,4 +1,4 @@
-from new.courts import kolkata
+from new.courts import kolkata, gst_appellate
 from new.utils.new_metadata import metadata
 
 
@@ -16,4 +16,7 @@ def court_controller(court_name, bench):
             if bench_list is not None:
                 for bench_ in bench_list:
                     if bench_['id'] == bench:
-                        return kolkata.main('kolkata', bench)
+                        return kolkata.main(court_name, bench)
+
+        if str(code_file) == 'gst_appellate':
+            return gst_appellate.main(court_name)

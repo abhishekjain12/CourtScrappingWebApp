@@ -14,7 +14,7 @@ from Utils.db import select_json_query, get_tables_info, update_history_tracker,
     select_query, update_query, select_one_query
 from common import transfer_to_bucket, pdf_to_text_api, court_pdfname
 from new.utils import db as new_db, new_controller, new_metadata
-from new.utils.json_utils import create_transfer_json
+from new.utils.json_utils import create_transfer_json, create_transfer_json_bench
 
 app = Flask(__name__)
 module_directory = os.path.dirname(__file__)
@@ -224,26 +224,44 @@ def new_start_scrap():
     bench = request.form['bench']
 
     new_db.update_query("UPDATE tracker SET status='IN_CANCELLED', emergency_exit=true WHERE status='IN_RUNNING'")
-    new_db.update_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0,"
-                        "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
-                        "transferred_text=0 WHERE court_name=%s and bench=%s", (court_name, bench))
+
+    if str(bench).lower() == 'none':
+        new_db.update_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0,"
+                            "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
+                            "transferred_text=0 WHERE court_name=%s", (court_name))
+    else:
+        new_db.update_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0,"
+                            "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
+                            "transferred_text=0 WHERE court_name=%s and bench=%s", (court_name, bench))
 
     res = new_controller.court_controller(court_name, bench)
-    if res:
-        new_db.update_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
-                            "WHERE court_name=%s and bench=%s", (court_name, bench))
+    if str(bench).lower() == 'none':
+        if res:
+            new_db.update_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
+                                "WHERE court_name=%s", (court_name))
+        else:
+            new_db.update_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
+                                "WHERE court_name=%s", (court_name))
+            create_transfer_json(court_name)
     else:
-        new_db.update_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
-                            "WHERE court_name=%s and bench=%s", (court_name, bench))
+        if res:
+            new_db.update_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
+                                "WHERE court_name=%s and bench=%s", (court_name, bench))
+        else:
+            new_db.update_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
+                                "WHERE court_name=%s and bench=%s", (court_name, bench))
+            create_transfer_json_bench(court_name, bench)
 
-    create_transfer_json(court_name, bench)
-    return 'Done'
+    return jsonify({'message': 'DONE'})
 
 
 @app.route('/new/current-scrap/<string:court_name>/<string:bench>')
 def new_current_scrap(court_name, bench):
-    return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s",
-                                           (court_name, bench)))
+    if str(bench).lower() == 'none':
+        return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE court_name=%s", (court_name)))
+    else:
+        return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s",
+                                               (court_name, bench)))
 
 
 @app.route('/new/running-scrap')
@@ -253,8 +271,12 @@ def new_running_scrap():
 
 @app.route('/new/cancel-scrap/<string:court_name>/<string:bench>')
 def new_cancel_scrap(court_name, bench):
-    return jsonify(new_db.update_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
-                                       "WHERE court_name=%s and bench=%s", (court_name, bench)))
+    if str(bench).lower() == 'none':
+        return jsonify(new_db.update_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
+                                           "WHERE court_name=%s", (court_name)))
+    else:
+        return jsonify(new_db.update_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
+                                           "WHERE court_name=%s and bench=%s", (court_name, bench)))
 
 
 @app.route('/new/get-bench-list/<string:court_name>')
