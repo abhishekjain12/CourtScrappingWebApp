@@ -1,4 +1,4 @@
-from new.courts import kolkata, gst_appellate
+from new.courts import kolkata, gst_appellate, gst_advance_authority
 from new.utils.new_metadata import metadata
 
 
@@ -20,3 +20,6 @@ def court_controller(court_name, bench):
 
         if str(code_file) == 'gst_appellate':
             return gst_appellate.main(court_name)
+
+        if str(code_file) == 'gst_advance_authority':
+            return gst_advance_authority.main(court_name)

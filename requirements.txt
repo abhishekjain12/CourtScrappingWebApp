@@ -1,3 +1,4 @@
+slugify
 flask
 PyMySQL
 python-slugify

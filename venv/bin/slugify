@@ -1,12 +1,16 @@
 #!/home/abhijeet/Documents/Projects/CourtScrappingWebApp/venv/bin/python
-# EASY-INSTALL-ENTRY-SCRIPT: 'python-slugify==2.0.1','console_scripts','slugify'
-__requires__ = 'python-slugify==2.0.1'
-import re
-import sys
-from pkg_resources import load_entry_point
+# -*- coding: utf-8 -*-
 
-if __name__ == '__main__':
-    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
-    sys.exit(
-        load_entry_point('python-slugify==2.0.1', 'console_scripts', 'slugify')()
-    )
+USAGE = """Usage: echo "Héllo Wörld" | slugify # => hello-world"""
+
+import sys
+import slugify
+
+if sys.argv[1:]:
+    print >>sys.stderr, USAGE
+    sys.exit(1)
+
+line = sys.stdin.readline()
+while line:
+    print slugify.slugify(line.decode('utf-8'))
+    line = sys.stdin.readline()

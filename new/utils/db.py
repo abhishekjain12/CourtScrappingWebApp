@@ -10,8 +10,8 @@ def db_connect():
     return pymysql.connect(
         host="localhost",
         user="root",
-        # password="root",
-        password="krypton212",
+        password="root",
+        # password="krypton212",
         db="new_courts_data",
         # charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)

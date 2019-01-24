@@ -22,4 +22,9 @@ metadata = [
         'file_name': "gst_appellate",
         'bench': None,
     },
+    {
+        'court_name': "gst_advance_authority",
+        'file_name': "gst_advance_authority",
+        'bench': None,
+    },
 ]
