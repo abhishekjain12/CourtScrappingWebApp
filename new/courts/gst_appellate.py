@@ -109,23 +109,31 @@ def parser(base_url, court_name, response):
             text_filename = slugify('appeal-' + appeal_order_no + appeal_order_date) + '.txt'
 
             pdf_filepath = request_pdf(pdf_url, pdf_filename, court_name, appeal_order_no)
-            pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
+            if pdf_filepath is not None:
+                pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
 
-            text_filepath = module_directory + "/../data_files/text_files/" + court_name + '_' + text_filename
-            fw = open(text_filepath, "w")
-            fw.write(pdf_text_data)
+                text_filepath = module_directory + "/../data_files/text_files/" + court_name + '_' + text_filename
+                fw = open(text_filepath, "w")
+                fw.write(pdf_text_data)
+            else:
+                text_filepath = None
+                pdf_text_data = None
 
             if aar_order_no is not None:
                 aar_pdf_filename = slugify('aar-' + aar_order_no + aar_order_date) + '.pdf'
                 aar_text_filename = slugify('aar-' + aar_order_no + aar_order_date) + '.txt'
 
                 aar_pdf_filepath = request_pdf(aar_pdf_url, aar_pdf_filename, court_name, aar_order_no)
-                aar_text_data = escape_string(pdf_to_text_api(aar_pdf_filepath))
+                if aar_pdf_filepath is not None:
+                    aar_text_data = escape_string(pdf_to_text_api(aar_pdf_filepath))
 
-                aar_text_filepath = module_directory + "/../data_files/text_files/" \
-                                                       "" + court_name + '_' + aar_text_filename
-                fw = open(aar_text_filepath, "w")
-                fw.write(aar_text_data)
+                    aar_text_filepath = module_directory + "/../data_files/text_files/" \
+                                                           "" + court_name + '_' + aar_text_filename
+                    fw = open(aar_text_filepath, "w")
+                    fw.write(aar_text_data)
+                else:
+                    aar_text_filepath = None
+                    aar_text_data = None
             else:
                 aar_pdf_filename = None
                 aar_text_filename = None
@@ -207,7 +215,7 @@ def request_data(base_url, court_name):
 
         emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s", (court_name))
         if emergency_exit['emergency_exit'] == 1:
-            update_history_tracker(court_name, None)
+            update_history_tracker(court_name)
             return True
 
         update_query("UPDATE tracker SET no_tries=0, no_alerts=0 WHERE court_name=%s", (court_name))
@@ -233,7 +241,7 @@ def request_data(base_url, court_name):
                          (court_name, 'Failed to get HTML.'))
             update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
 
-        update_history_tracker(court_name, None)
+        update_history_tracker(court_name)
 
     except Exception as e:
         traceback.print_exc()

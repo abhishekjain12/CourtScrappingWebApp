@@ -10,8 +10,8 @@ def db_connect():
     return pymysql.connect(
         host="localhost",
         user="root",
-        password="root",
-        # password="krypton212",
+        # password="root",
+        password="krypton212",
         db="new_courts_data",
         # charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
@@ -160,7 +160,18 @@ def select_count_query_with_extra_param(table_name, case_id, date_col, date_val,
         return False
 
 
-def update_history_tracker(court_name, bench):
+def update_history_tracker(court_name):
+    r = select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1", (court_name))
+    insert_query("INSERT INTO tracker_history (court_name, bench, start_date, end_date, no_tries, total_cases, "
+                 "inserted_cases, no_nodata, no_alerts, no_pdf, no_text, no_json, transferred_pdf, transferred_text, "
+                 "transferred_json, emergency_exit, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                 "%s, %s, %s, %s, %s, %s)",
+                 (r['court_name'], r['bench'], r['start_date'], r['end_date'], r['no_tries'], r['total_cases'],
+                  r['inserted_cases'], r['no_nodata'], r['no_alerts'], r['no_pdf'], r['no_text'], r['no_json'],
+                  r['transferred_pdf'], r['transferred_text'], r['transferred_json'], r['emergency_exit'], r['status']))
+
+
+def update_history_tracker_bench(court_name, bench):
     r = select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1",
                          (court_name, bench))
 

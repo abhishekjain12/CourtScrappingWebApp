@@ -12,7 +12,7 @@ from new.utils.bucket import transfer_to_bucket
 from new.utils.contants import NO_TRIES, DAYS
 from new.utils.extract_text import pdf_to_text_api
 from new.utils.my_proxy import proxy_dict
-from new.utils.db import select_count_query, insert_query, select_one_query, update_history_tracker, update_query
+from new.utils.db import select_count_query, insert_query, select_one_query, update_history_tracker_bench, update_query
 
 module_directory = os.path.dirname(__file__)
 
@@ -70,12 +70,16 @@ def parser(base_url, court_name, bench_id, response):
             pdf_filename = str(jud_pdf_name).replace('.pdf', '')
 
             pdf_filepath = request_pdf(pdf_url, pdf_filename, court_name, bench_id, case_id)
-            pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
+            if pdf_filepath is not None:
+                pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
 
-            text_filepath = module_directory + "/../data_files/text_files/" + court_name + "_" + slugify(
-                pdf_filename) + '.txt'
-            fw = open(text_filepath, "w")
-            fw.write(pdf_text_data)
+                text_filepath = module_directory + "/../data_files/text_files/" + court_name + "_" + slugify(
+                    pdf_filename) + '.txt'
+                fw = open(text_filepath, "w")
+                fw.write(pdf_text_data)
+            else:
+                text_filepath = None
+                pdf_text_data = None
 
             if insert_query(
                     "INSERT INTO kolkata (case_id, judgment_date, pdf_url, pdf_filename, text_filename, case_type, "
@@ -106,17 +110,17 @@ def parser(base_url, court_name, bench_id, response):
                 os.remove(pdf_filepath)
             else:
                 insert_query("INSERT INTO alerts (court_name, bench, case_id, error_message) VALUES (%s, %s, %s, %s)",
-                             (court_name, bench_id, case_id, 'Failed to transfer to bucket.'))
+                             (court_name, bench_id, case_id, 'Failed to transfer PDF to bucket.'))
                 update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
                              (court_name, bench_id))
 
             if transfer_to_bucket('Text_Files', text_filepath):
-                update_query("UPDATE tracker SET transferred_text=transferred_text+1 WHERE court_name=%s and bench=%s",
-                             (court_name, bench_id))
+                update_query("UPDATE tracker SET transferred_text=transferred_text+1 WHERE court_name=%s and "
+                             "bench=%s", (court_name, bench_id))
                 os.remove(text_filepath)
             else:
                 insert_query("INSERT INTO alerts (court_name, bench, case_id, error_message) VALUES (%s, %s, %s, %s)",
-                             (court_name, bench_id, case_id, 'Failed to transfer to bucket.'))
+                             (court_name, bench_id, case_id, 'Failed to transfer text to bucket.'))
                 update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
                              (court_name, bench_id))
         else:
@@ -144,7 +148,7 @@ def request_data(base_url, court_name, bench_id):
             emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s and bench=%s",
                                               (court_name, bench_id))
             if emergency_exit['emergency_exit'] == 1:
-                update_history_tracker(court_name, bench_id)
+                update_history_tracker_bench(court_name, bench_id)
                 return True
 
             update_query("UPDATE tracker SET no_tries=0, no_alerts=0 WHERE court_name=%s and bench=%s",
@@ -182,7 +186,7 @@ def request_data(base_url, court_name, bench_id):
 
             update_query("UPDATE tracker SET end_date=%s WHERE court_name=%s and bench=%s",
                          (start_date, court_name, bench_id))
-            update_history_tracker(court_name, bench_id)
+            update_history_tracker_bench(court_name, bench_id)
             start_date = (datetime.datetime.strptime(str(start_date), "%Y-%m-%d") + datetime.timedelta(days=DAYS)
                           ).strftime("%Y-%m-%d")
 
