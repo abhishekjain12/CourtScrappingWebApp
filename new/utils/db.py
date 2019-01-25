@@ -135,6 +135,31 @@ def select_count_query(table_name, case_id, date_col, date_val):
         return False
 
 
+def select_count_query_with_extra_param(table_name, case_id, date_col, date_val,
+                                        extra_parameter_name_1, extra_val_1, extra_parameter_name_2, extra_val_2):
+    db = db_connect()
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT count(case_id) FROM " + str(table_name) + " WHERE case_id = '" + str(case_id) +
+                       "' AND " + str(date_col) + " = '" + str(date_val) + "'" + "AND " + str(extra_parameter_name_1)
+                       + "= '" + str(extra_val_1) + "'" + "AND " + str(extra_parameter_name_2)
+                       + "= '" + str(extra_val_2) + "'")
+
+        result = cursor.fetchall()
+        cursor.close()
+        db.close()
+        if not result[0]['count(case_id)']:
+            return True
+        else:
+            return False
+
+    except Exception as e:
+        traceback.print_exc()
+        logging.error("Failed select count query: %s", e)
+        db.close()
+        return False
+
+
 def update_history_tracker(court_name, bench):
     r = select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1",
                          (court_name, bench))
