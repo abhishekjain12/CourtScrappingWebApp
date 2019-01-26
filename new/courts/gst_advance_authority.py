@@ -20,7 +20,7 @@ module_directory = os.path.dirname(__file__)
 def request_pdf(url, jud_pdf_name, court_name, case_id, page_no, name_of_applicant):
     try:
         response = requests.request("GET", url, proxies=proxy_dict)
-        if response.status_code == 200:
+        if response.status_code == 200 and response.headers['Content-Type'] == 'application/pdf':
             if response.url == "http://gstcouncil.gov.in/":
                 logging.error("Failed to get pdf file for: " + str(jud_pdf_name))
                 insert_query("INSERT INTO alerts (court_name, case_id, page_no, error_message) VALUES (%s, %s, %s, %s)",

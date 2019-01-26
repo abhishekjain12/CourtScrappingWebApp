@@ -19,20 +19,27 @@ module_directory = os.path.dirname(__file__)
 
 def request_pdf(url, jud_pdf_name, court_name, bench_id, case_id):
     try:
-        response = requests.request("GET", url, proxies=proxy_dict)
-        if response.status_code == 200:
-            file_path = module_directory + "/../data_files/pdf_files/" + court_name + "_" + slugify(jud_pdf_name) + \
-                        '.pdf'
-            fw = open(file_path, "wb")
-            fw.write(response.content)
-            update_query("UPDATE tracker SET no_pdf=no_pdf+1 WHERE court_name=%s and bench=%s", (court_name, bench_id))
-            return file_path
+        if url is not None:
+            response = requests.request("GET", url, proxies=proxy_dict)
+            if response.status_code == 200 and response.headers['Content-Type'] == 'application/pdf':
+                file_path = module_directory + "/../data_files/pdf_files/" + court_name + "_" + slugify(jud_pdf_name) + \
+                            '.pdf'
+                fw = open(file_path, "wb")
+                fw.write(response.content)
+                update_query("UPDATE tracker SET no_pdf=no_pdf+1 WHERE court_name=%s and bench=%s", (court_name, bench_id))
+                return file_path
+            else:
+                logging.error("Failed to get text file for: " + str(jud_pdf_name))
+                insert_query("INSERT INTO alerts (court_name, bench, case_id, error_message) VALUES (%s, %s, %s, %s)",
+                             (court_name, bench_id, case_id, 'Failed to download PDF File.'))
+                update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
+                             (court_name, bench_id))
+                return None
         else:
-            logging.error("Failed to get text file for: " + str(jud_pdf_name))
-            insert_query("INSERT INTO alerts (court_name, bench, case_id, error_message) VALUES (%s, %s, %s, %s)",
-                         (court_name, bench_id, case_id, 'Failed to download PDF File.'))
-            update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
-                         (court_name, bench_id))
+            logging.error("Failed to get pdf file for: " + str(jud_pdf_name))
+            insert_query("INSERT INTO alerts (court_name, case_id, error_message) VALUES (%s, %s, %s)",
+                         (court_name, case_id, 'Failed to download PDF File. No url.'))
+            update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
             return None
 
     except Exception as e:

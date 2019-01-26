@@ -18,18 +18,25 @@ module_directory = os.path.dirname(__file__)
 
 def request_pdf(url, jud_pdf_name, court_name, case_id):
     try:
-        response = requests.request("GET", url, proxies=proxy_dict)
-        if response.status_code == 200:
-            file_path = module_directory + "/../data_files/pdf_files/" + court_name + "_" + slugify(jud_pdf_name) + \
-                        '.pdf'
-            fw = open(file_path, "wb")
-            fw.write(response.content)
-            update_query("UPDATE tracker SET no_pdf=no_pdf+1 WHERE court_name=%s", (court_name))
-            return file_path
+        if url is not None:
+            response = requests.request("GET", url, proxies=proxy_dict)
+            if response.status_code == 200 and response.headers['Content-Type'] == 'application/pdf':
+                file_path = module_directory + "/../data_files/pdf_files/" + court_name + "_" + \
+                            slugify(jud_pdf_name) + '.pdf'
+                fw = open(file_path, "wb")
+                fw.write(response.content)
+                update_query("UPDATE tracker SET no_pdf=no_pdf+1 WHERE court_name=%s", (court_name))
+                return file_path
+            else:
+                logging.error("Failed to get pdf file for: " + str(jud_pdf_name))
+                insert_query("INSERT INTO alerts (court_name, case_id, error_message) VALUES (%s, %s, %s)",
+                             (court_name, case_id, 'Failed to download PDF File.'))
+                update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
+                return None
         else:
-            logging.error("Failed to get text file for: " + str(jud_pdf_name))
+            logging.error("Failed to get pdf file for: " + str(jud_pdf_name))
             insert_query("INSERT INTO alerts (court_name, case_id, error_message) VALUES (%s, %s, %s)",
-                         (court_name, case_id, 'Failed to download PDF File.'))
+                         (court_name, case_id, 'Failed to download PDF File. No url.'))
             update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
             return None
 
@@ -71,34 +78,34 @@ def parser(base_url, court_name, response):
             i += 1
             if i == 2:
                 state = escape_string(str(td.decode_contents()))
-            if i == 3:
+            elif i == 3:
                 name_of_appellant = escape_string(str(td.decode_contents()))
-            if i == 4:
+            elif i == 4:
                 brief_of_order_in_appeal = escape_string(str(td.decode_contents()))
-            if i == 5:
+            elif i == 5:
                 appeal_order = str(td.decode_contents()).lower()
                 if 'dated' in appeal_order:
                     appeal_order = appeal_order.split('dated')
-                if 'dt.' in appeal_order:
+                elif 'dt.' in appeal_order:
                     appeal_order = appeal_order.split('dt.')
 
                 appeal_order_no = escape_string(appeal_order[0])
                 appeal_order_date = escape_string(appeal_order[1])
 
-            if i == 6:
+            elif i == 6:
                 a_tag = BeautifulSoup(str(td), "html.parser").a
                 pdf_url = escape_string(str(base_url + a_tag.get('href')))
 
-            if i == 7:
+            elif i == 7:
                 if str(td.decode_contents()) != '-':
                     a_tag = BeautifulSoup(str(td), "html.parser").a
                     aar_pdf_url = escape_string(str(a_tag.get('href')))
                     aar_order = str(a_tag.decode_contents()).lower()
                     if 'dated' in aar_order:
                         aar_order = aar_order.split('dated')
-                    if 'dt.' in aar_order:
+                    elif 'dt.' in aar_order:
                         aar_order = aar_order.split('dt.')
-                    if 'dtd.' in aar_order:
+                    elif 'dtd.' in aar_order:
                         aar_order = aar_order.split('dtd.')
 
                     aar_order_no = escape_string(aar_order[0])
