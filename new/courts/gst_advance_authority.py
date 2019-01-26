@@ -203,19 +203,19 @@ def parser(court_name, page_no, response):
         logging.error("Failed to request: %s", e)
         insert_query("INSERT INTO alerts (court_name, page_no, error_message) VALUES (%s, %s, %s)",
                      (court_name, page_no, str(e)))
-        update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", court_name)
+        update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
         return False
 
 
 def request_data(base_url, court_name):
     page_no = 0
     try:
-        emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s ", court_name)
+        emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s ", (court_name))
         if emergency_exit['emergency_exit'] == 1:
             update_history_tracker(court_name)
             return True
 
-        page_no = select_one_query("SELECT page_no FROM tracker WHERE court_name=%s", court_name)['page_no']
+        page_no = select_one_query("SELECT page_no FROM tracker WHERE court_name=%s", (court_name))['page_no']
 
         url = base_url + "?page=" + str(page_no)
         headers = {
@@ -238,7 +238,7 @@ def request_data(base_url, court_name):
         while page_no <= last_page_no:
             update_query("UPDATE tracker SET page_no=%s WHERE court_name=%s", (page_no, court_name))
             update_query("UPDATE tracker SET no_tries=0, no_alerts=0 WHERE court_name=%s", (court_name))
-            no_tries = select_one_query("SELECT no_tries FROM tracker WHERE court_name=%s", court_name)['no_tries']
+            no_tries = select_one_query("SELECT no_tries FROM tracker WHERE court_name=%s", (court_name))['no_tries']
 
             url = base_url + "?page=" + str(page_no)
             response = requests.request("GET", url, headers=headers, proxies=proxy_dict)
@@ -247,7 +247,7 @@ def request_data(base_url, court_name):
             while no_tries < NO_TRIES:
                 parser(court_name, page_no, response)
                 check_cases = select_one_query("SELECT total_cases, inserted_cases FROM tracker WHERE court_name=%s",
-                                               court_name)
+                                               (court_name))
                 if check_cases['total_cases'] == check_cases['inserted_cases']:
                     break
 
@@ -257,7 +257,7 @@ def request_data(base_url, court_name):
                 if no_tries == NO_TRIES:
                     insert_query("INSERT INTO alerts (court_name, page_no, error_message) VALUES (%s, %s, %s)",
                                  (court_name, page_no, 'Tries Exceeded'))
-                    update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", court_name)
+                    update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
 
             update_history_tracker(court_name)
             page_no += 1
