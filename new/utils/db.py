@@ -135,16 +135,14 @@ def select_count_query(table_name, case_id, date_col, date_val):
         return False
 
 
-def select_count_query_with_extra_param(table_name, case_id, date_col, date_val,
-                                        extra_parameter_name_1, extra_val_1, extra_parameter_name_2, extra_val_2):
+def select_count_query_with_extra_param(table_name, case_id, date_col, date_val, extra_parameter_name_1, extra_val_1,
+                                        extra_parameter_name_2, extra_val_2):
     db = db_connect()
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT count(case_id) FROM " + str(table_name) + " WHERE case_id = '" + str(case_id) +
-                       "' AND " + str(date_col) + " = '" + str(date_val) + "'" + "AND " + str(extra_parameter_name_1)
-                       + "= '" + str(extra_val_1) + "'" + "AND " + str(extra_parameter_name_2)
-                       + "= '" + str(extra_val_2) + "'")
-
+        cursor.execute("SELECT count(case_id) FROM " + str(table_name) + " WHERE case_id =%s AND " + str(date_col) +
+                       "=%s AND " + str(extra_parameter_name_1) + "=%s AND " + str(extra_parameter_name_2) + "=%s",
+                       (str(case_id), str(date_val), str(extra_val_1), str(extra_val_2)))
         result = cursor.fetchall()
         cursor.close()
         db.close()
@@ -164,21 +162,22 @@ def update_history_tracker(court_name):
     r = select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1", (court_name))
     insert_query("INSERT INTO tracker_history (court_name, bench, start_date, end_date, no_tries, total_cases, "
                  "inserted_cases, no_nodata, no_alerts, no_pdf, no_text, no_json, transferred_pdf, transferred_text, "
-                 "transferred_json, emergency_exit, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                 "%s, %s, %s, %s, %s, %s)",
+                 "transferred_json, emergency_exit, status, page_no) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                 "%s, %s, %s, %s, %s, %s, %s, %s)",
                  (r['court_name'], r['bench'], r['start_date'], r['end_date'], r['no_tries'], r['total_cases'],
                   r['inserted_cases'], r['no_nodata'], r['no_alerts'], r['no_pdf'], r['no_text'], r['no_json'],
-                  r['transferred_pdf'], r['transferred_text'], r['transferred_json'], r['emergency_exit'], r['status']))
+                  r['transferred_pdf'], r['transferred_text'], r['transferred_json'], r['emergency_exit'], r['status'],
+                  r['page_no']))
 
 
 def update_history_tracker_bench(court_name, bench):
     r = select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s ORDER BY id LIMIT 1",
                          (court_name, bench))
-
     insert_query("INSERT INTO tracker_history (court_name, bench, start_date, end_date, no_tries, total_cases, "
                  "inserted_cases, no_nodata, no_alerts, no_pdf, no_text, no_json, transferred_pdf, transferred_text, "
-                 "transferred_json, emergency_exit, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
-                 "%s, %s, %s, %s, %s, %s)",
+                 "transferred_json, emergency_exit, status, page_no) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                 "%s, %s, %s, %s, %s, %s, %s, %s)",
                  (r['court_name'], r['bench'], r['start_date'], r['end_date'], r['no_tries'], r['total_cases'],
                   r['inserted_cases'], r['no_nodata'], r['no_alerts'], r['no_pdf'], r['no_text'], r['no_json'],
-                  r['transferred_pdf'], r['transferred_text'], r['transferred_json'], r['emergency_exit'], r['status']))
+                  r['transferred_pdf'], r['transferred_text'], r['transferred_json'], r['emergency_exit'], r['status'],
+                  r['page_no']))

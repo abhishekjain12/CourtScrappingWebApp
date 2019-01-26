@@ -1,5 +1,0 @@
-ERROR    - 2019-01-23 11:58:02,583 [rulings_by_advance_authority.py][request_data]  Failed to request: (1045, "Access denied for user 'root'@'localhost' (using password: YES)")
-ERROR    - 2019-01-23 11:58:36,302 [db.py][select_one_query]  Failed select one query: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '%s' at line 1")
-ERROR    - 2019-01-23 11:58:36,305 [rulings_by_advance_authority.py][request_data]  Failed to request: 'NoneType' object is not subscriptable
-ERROR    - 2019-01-23 12:03:35,249 [rulings_by_advance_authority.py][request_data]  Failed to request: 'NoneType' object has no attribute 'decode_contents'
-ERROR    - 2019-01-23 12:13:53,120 [rulings_by_advance_authority.py][request_data]  Failed to request: 'str' object has no attribute 'trim'
