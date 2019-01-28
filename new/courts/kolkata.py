@@ -78,7 +78,7 @@ def parser(base_url, court_name, bench_id, response):
 
             pdf_filepath = request_pdf(pdf_url, pdf_filename, court_name, bench_id, case_id)
             if pdf_filepath is not None:
-                pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
+                pdf_text_data = escape_string(str(pdf_to_text_api(pdf_filepath)))
 
                 text_filepath = module_directory + "/../data_files/text_files/" + court_name + "_" + slugify(
                     pdf_filename) + '.txt'
@@ -196,6 +196,8 @@ def request_data(base_url, court_name, bench_id):
             update_history_tracker_bench(court_name, bench_id)
             start_date = (datetime.datetime.strptime(str(start_date), "%Y-%m-%d") + datetime.timedelta(days=DAYS)
                           ).strftime("%Y-%m-%d")
+
+        return True
 
     except Exception as e:
         traceback.print_exc()

@@ -149,7 +149,7 @@ def parser(court_name, page_no, response):
                                            str(applicant_name_for_pdf).strip())
 
                 if pdf_filepath is not None:
-                    pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
+                    pdf_text_data = escape_string(str(pdf_to_text_api(pdf_filepath)))
                     text_filepath = module_directory + "/../data_files/text_files/" + court_name + '_' + text_filename
                     fw = open(text_filepath, "w")
                     fw.write(pdf_text_data)
@@ -261,6 +261,8 @@ def request_data(base_url, court_name):
 
             update_history_tracker(court_name)
             page_no += 1
+
+        return True
 
     except Exception as e:
         traceback.print_exc()

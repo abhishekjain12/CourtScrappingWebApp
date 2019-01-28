@@ -117,7 +117,7 @@ def parser(base_url, court_name, response):
 
             pdf_filepath = request_pdf(pdf_url, pdf_filename, court_name, appeal_order_no)
             if pdf_filepath is not None:
-                pdf_text_data = escape_string(pdf_to_text_api(pdf_filepath))
+                pdf_text_data = escape_string(str(pdf_to_text_api(pdf_filepath)))
 
                 text_filepath = module_directory + "/../data_files/text_files/" + court_name + '_' + text_filename
                 fw = open(text_filepath, "w")
@@ -249,6 +249,7 @@ def request_data(base_url, court_name):
             update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
 
         update_history_tracker(court_name)
+        return True
 
     except Exception as e:
         traceback.print_exc()
