@@ -231,6 +231,8 @@ def request_data(base_url, court_name):
         no_tries = select_one_query("SELECT no_tries FROM tracker WHERE court_name=%s", (court_name))['no_tries']
 
         while no_tries < NO_TRIES:
+            update_query("UPDATE tracker SET total_cases=0, inserted_cases=0, no_pdf=0, no_text=0, transferred_pdf=0, "
+                         "transferred_text=0 WHERE court_name=%s", (court_name))
             response = requests.request("GET", url, proxies=proxy_dict)
             if response.status_code == 200:
                 parser(base_url, court_name, str(response.text))

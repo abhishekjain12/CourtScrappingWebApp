@@ -247,6 +247,8 @@ def request_data(base_url, court_name):
             response = response.text
 
             while no_tries < NO_TRIES:
+                update_query("UPDATE tracker SET total_cases=0, inserted_cases=0, no_pdf=0, no_text=0, "
+                             "transferred_pdf=0, transferred_text=0 WHERE court_name=%s", (court_name))
                 parser(court_name, page_no, response)
                 check_cases = select_one_query("SELECT total_cases, inserted_cases FROM tracker WHERE court_name=%s",
                                                (court_name))
