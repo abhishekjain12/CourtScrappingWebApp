@@ -131,8 +131,9 @@ def parser(base_url, court_name, bench_id, response):
                 update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s and bench=%s",
                              (court_name, bench_id))
         else:
-            update_query("UPDATE tracker SET inserted_cases=inserted_cases+1 WHERE court_name=%s and bench=%s",
-                         (court_name, bench_id))
+            update_query("UPDATE tracker SET inserted_cases=inserted_cases+1, no_pdf=no_pdf+1, no_text=no_text+1,"
+                         "transferred_pdf=transferred_pdf+1, transferred_text=transferred_text+1 WHERE court_name=%s "
+                         "and bench=%s", (court_name, bench_id))
 
 
 def request_data(base_url, court_name, bench_id):

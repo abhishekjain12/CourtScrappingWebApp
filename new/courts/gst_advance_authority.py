@@ -196,7 +196,9 @@ def parser(court_name, page_no, response):
                                  (court_name, case_id, 'Failed to transfer text to bucket.'))
                     update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
             else:
-                update_query("UPDATE tracker SET inserted_cases=inserted_cases+1 WHERE court_name=%s", (court_name))
+                update_query("UPDATE tracker SET inserted_cases=inserted_cases+1, no_pdf=no_pdf+1, no_text=no_text+1, "
+                             "transferred_pdf=transferred_pdf+1, transferred_text=transferred_text+1 WHERE "
+                             "court_name=%s", (court_name))
 
     except Exception as e:
         traceback.print_exc()
