@@ -10,6 +10,7 @@ from new.utils import logs
 from new.utils.bucket import transfer_to_bucket
 from new.utils.contants import NO_TRIES
 from new.utils.extract_text import pdf_to_text_api
+from new.utils.json_utils import create_transfer_json
 from new.utils.my_proxy import proxy_dict
 from new.utils.db import insert_query, update_query, select_one_query, update_history_tracker, \
     select_count_query_with_extra_param
@@ -263,6 +264,7 @@ def request_data(base_url, court_name):
                                  (court_name, page_no, 'Tries Exceeded'))
                     update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
 
+            create_transfer_json(court_name)
             update_history_tracker(court_name)
             page_no += 1
 

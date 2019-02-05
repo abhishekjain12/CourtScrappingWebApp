@@ -11,6 +11,7 @@ from new.utils import logs
 from new.utils.bucket import transfer_to_bucket
 from new.utils.contants import NO_TRIES, DAYS
 from new.utils.extract_text import pdf_to_text_api
+from new.utils.json_utils import create_transfer_json_bench
 from new.utils.my_proxy import proxy_dict
 from new.utils.db import select_count_query, insert_query, select_one_query, update_history_tracker_bench, update_query
 
@@ -198,6 +199,7 @@ def request_data(base_url, court_name, bench_id):
 
             update_query("UPDATE tracker SET end_date=%s WHERE court_name=%s and bench=%s",
                          (start_date, court_name, bench_id))
+            create_transfer_json_bench(court_name, bench_id)
             update_history_tracker_bench(court_name, bench_id)
             start_date = (datetime.datetime.strptime(str(start_date), "%Y-%m-%d") + datetime.timedelta(days=DAYS)
                           ).strftime("%Y-%m-%d")

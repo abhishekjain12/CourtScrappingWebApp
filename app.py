@@ -242,7 +242,6 @@ def new_start_scrap():
         else:
             new_db.update_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
                                 "WHERE court_name=%s", (court_name))
-        create_transfer_json(court_name)
     else:
         if res:
             new_db.update_query("UPDATE tracker SET status = 'IN_SUCCESS', emergency_exit=true "
@@ -250,7 +249,6 @@ def new_start_scrap():
         else:
             new_db.update_query("UPDATE tracker SET status = 'IN_FAILED', emergency_exit=true "
                                 "WHERE court_name=%s and bench=%s", (court_name, bench))
-        create_transfer_json_bench(court_name, bench)
 
     return jsonify({'message': 'DONE'})
 
