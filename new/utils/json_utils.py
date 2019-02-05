@@ -42,8 +42,7 @@ def create_transfer_json_bench(court_name, bench):
                     for record in result:
                         update_query("UPDATE " + court_name + " SET is_json=1 WHERE id='" + str(record['id']) + "'")
 
-                    update_query("UPDATE tracker SET no_json=no_json+1 WHERE court_name=%s", (court_name))
-                    update_query("UPDATE tracker SET transferred_json=transferred_json+1 "
+                    update_query("UPDATE tracker SET no_json=no_json+1, transferred_json=transferred_json+1 "
                                  "WHERE court_name=%s and bench=%s", (court_name, bench))
                     os.remove(file_path)
                 else:
@@ -97,9 +96,8 @@ def create_transfer_json(court_name):
                     for record in result:
                         update_query("UPDATE " + court_name + " SET is_json=1 WHERE id='" + str(record['id']) + "'")
 
-                    update_query("UPDATE tracker SET no_json=no_json+1 WHERE court_name=%s", (court_name))
-                    update_query("UPDATE tracker SET transferred_json=transferred_json+1 WHERE court_name=%s",
-                                 (court_name))
+                    update_query("UPDATE tracker SET no_json=no_json+1, transferred_json=transferred_json+1 "
+                                 "WHERE court_name=%s", (court_name))
                     os.remove(file_path)
                 else:
                     insert_query("INSERT INTO alerts (court_name, error_message) VALUES (%s, %s)",
