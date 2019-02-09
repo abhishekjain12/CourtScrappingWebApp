@@ -212,7 +212,7 @@ function running_new() {
                      s_btn.addClass("d-none");
                      $('#new-cancel-btn').removeClass("d-none");
                      new_interval = setInterval(function () {
-                                     current_s(data.Name);
+                                     current_new(data.court_name, data.bench);
                                  }, 10000);
                 }
                 else {
