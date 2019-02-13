@@ -28,8 +28,9 @@ metadata = [
         'bench': None,
     },
     {
-        'court_name': "chhattisgarh",
-        'file_name': "chhattisgarh",
+
+        'court_name': "aar_rulings",
+        'file_name': "aar_rulings",
         'bench': None,
     },
     {
@@ -37,4 +38,5 @@ metadata = [
         'file_name': "punjab_haryana",
         'bench': None,
     },
+
 ]
