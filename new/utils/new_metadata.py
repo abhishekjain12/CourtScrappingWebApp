@@ -27,4 +27,14 @@ metadata = [
         'file_name': "gst_advance_authority",
         'bench': None,
     },
+    {
+        'court_name': "chhattisgarh",
+        'file_name': "chhattisgarh",
+        'bench': None,
+    },
+    {
+        'court_name': "punjab_haryana",
+        'file_name': "punjab_haryana",
+        'bench': None,
+    },
 ]

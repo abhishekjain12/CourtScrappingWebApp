@@ -10,3 +10,5 @@ google-cloud-storage
 oauth2client
 google-api-python-client
 pyopenssl
+pillow
+google-cloud-vision

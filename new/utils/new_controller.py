@@ -1,4 +1,4 @@
-from new.courts import kolkata, gst_appellate, gst_advance_authority
+from new.courts import kolkata, gst_appellate, gst_advance_authority, chhattisgarh, punjab_haryana
 from new.utils.new_metadata import metadata
 
 
@@ -23,3 +23,9 @@ def court_controller(court_name, bench):
 
         if str(code_file) == 'gst_advance_authority':
             return gst_advance_authority.main(court_name)
+
+        if str(code_file) == 'chhattisgarh':
+            return chhattisgarh.main(court_name)
+
+        if str(code_file) == 'punjab_haryana':
+            return punjab_haryana.main(court_name)
