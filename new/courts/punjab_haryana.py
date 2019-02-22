@@ -27,7 +27,7 @@ def request_pdf(url, headers, pdf_name, court_name, case_id):
             no_tries = 0
             while no_tries < NO_TRIES:
                 response = requests.get(base_url + '/include/captcha.php', headers=headers, proxies=proxy_dict)
-                payload = 'vercode=' + image_to_text_api(response.content).lower() + '&submit=Submit'
+                payload = 'vercode=' + image_to_text_api(response.content, court_name).lower() + '&submit=Submit'
 
                 response = requests.request("POST", url, data=payload, headers=headers, verify=False,
                                             proxies=proxy_dict)

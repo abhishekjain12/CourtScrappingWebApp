@@ -36,10 +36,10 @@ def pdf_to_text_api(file_path):
         return None
 
 
-def image_to_text_api(image_data):
+def image_to_text_api(image_data, court_name):
     try:
         if image_data is not None:
-            filename = module_directory + '/../data_files/image_files/filename.png'
+            filename = module_directory + '/../data_files/image_files/' + court_name + '.png'
             im = Image.open(io.BytesIO(image_data))
             im.save(filename)
 
