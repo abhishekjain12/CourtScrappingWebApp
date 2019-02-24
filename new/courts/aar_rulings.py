@@ -83,8 +83,6 @@ def parser(court_name, page_no, response):
                 for td in total_td:
                     td_soup = BeautifulSoup(str(td), "html.parser")
                     strong_text = td_soup.find('strong')
-                    if strong_text is not None:
-                        print()
                     if j == 0:
                         if strong_text is not None:
                             s_no = escape_string(str(strong_text.decode_contents()))
