@@ -33,8 +33,15 @@ metadata = [
         'bench': None,
     },
     {
+
+        'court_name': "aar_rulings",
+        'file_name': "aar_rulings",
+        'bench': None,
+    },
+    {
         'court_name': "punjab_haryana",
         'file_name': "punjab_haryana",
         'bench': None,
     },
+
 ]
