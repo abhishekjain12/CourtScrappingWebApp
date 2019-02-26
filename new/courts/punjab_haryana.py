@@ -66,6 +66,9 @@ def parser(html_str, court_name, headers):
     table_soup = BeautifulSoup(str(table_list), "html.parser")
     tr_list = table_soup.find_all('tr')
 
+    update_query("UPDATE tracker SET total_cases=%s, inserted_cases=0, no_pdf=0, no_text=0, transferred_pdf=0,"
+                 "transferred_text=0 WHERE court_name=%s", (str(len(tr_list)), court_name))
+
     tr_count = 0
     for tr in tr_list:
         emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s", (court_name))
@@ -194,6 +197,7 @@ def request_data(court_name, headers):
 
                 if "no case found" in response.lower():
                     update_query("UPDATE tracker SET no_nodata=no_nodata+1 WHERE court_name=%s", (court_name))
+                    break
                 else:
                     parser(response, court_name, headers)
                     check_cases = select_one_query(

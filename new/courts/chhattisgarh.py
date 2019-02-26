@@ -59,6 +59,9 @@ def parser(html_str, court_name, year):
     ul_soup = BeautifulSoup(str(ul), "html.parser")
     li_list = ul_soup.find_all('li')
 
+    update_query("UPDATE tracker SET total_cases=%s, inserted_cases=0, no_pdf=0, no_text=0, transferred_pdf=0,"
+                 "transferred_text=0 WHERE court_name=%s", (str(len(li_list)), court_name))
+
     for li in li_list:
         emergency_exit = select_one_query("SELECT emergency_exit FROM tracker WHERE court_name=%s", (court_name))
         if emergency_exit is not None:
