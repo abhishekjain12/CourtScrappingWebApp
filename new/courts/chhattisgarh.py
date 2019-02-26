@@ -163,7 +163,7 @@ def request_data(court_name):
                 if "file or directory not found" in response.lower():
                     update_query("UPDATE tracker SET no_nodata=no_nodata+1 WHERE court_name=%s", (court_name))
                 else:
-                    parser(response, court_name, year)
+                    parser(response, court_name, str(year))
                     check_cases = select_one_query(
                         "SELECT total_cases, inserted_cases FROM tracker WHERE court_name=%s", (court_name))
                     if check_cases['total_cases'] == check_cases['inserted_cases']:
@@ -174,10 +174,10 @@ def request_data(court_name):
 
             if no_tries == NO_TRIES:
                 insert_query("INSERT INTO alerts (court_name, start_date, error_message) VALUES (%s, %s, %s)",
-                             (court_name, year, str(response)))
+                             (court_name, str(year), str(response)))
                 update_query("UPDATE tracker SET no_alerts=no_alerts+1 WHERE court_name=%s", (court_name))
 
-            update_query("UPDATE tracker SET end_date=%s WHERE court_name=%s", (year, court_name))
+            update_query("UPDATE tracker SET end_date=%s WHERE court_name=%s", (str(year), court_name))
             create_transfer_json(court_name)
             update_history_tracker(court_name)
 
