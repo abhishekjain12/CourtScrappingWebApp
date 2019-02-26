@@ -140,7 +140,7 @@ def request_data(court_name):
     year = None
     response = None
     try:
-        year = select_one_query("SELECT end_date FROM tracker WHERE court_name=%s", (court_name))['end_date']
+        year = int(select_one_query("SELECT end_date FROM tracker WHERE court_name=%s", (court_name))['end_date'])
         while str(year) <= str(datetime.datetime.now().strftime('%Y')):
             if str(year) == str(datetime.datetime.now().strftime('%Y')):
                 year = ''
