@@ -241,6 +241,3 @@ def main(court_name):
         'Cache-Control': "no-cache",
     }
     return request_data(court_name, headers)
-
-
-main('punjab_haryana')
