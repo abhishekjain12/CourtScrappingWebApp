@@ -125,6 +125,7 @@ function current_new(court_name, bench) {
                 s_btn.removeClass("disabled");
                 $('#new-cancel-btn').addClass("d-none");
                 s_btn.removeClass("d-none");
+                clearInterval(new_interval);
             }
             else {
                 tr_list += "<tr>";
@@ -148,6 +149,7 @@ function current_new(court_name, bench) {
                 if ("IN_RUNNING" !== data.status){
                     $('#new-cancel-btn').addClass("d-none");
                     $('#new-submit-btn').removeClass("d-none");
+                    clearInterval(new_interval);
                 }
             }
             $("#new-current").html(tr_list);
@@ -182,6 +184,7 @@ function running_new() {
                  s_btn.removeClass("disabled");
                 $('#new-cancel-btn').addClass("d-none");
                 s_btn.removeClass("d-none");
+                clearInterval(new_interval);
             }
             else {
                 tr_list += "<tr>";
@@ -215,6 +218,7 @@ function running_new() {
                 else {
                     $('#new-cancel-btn').addClass("d-none");
                     $('#new-submit-btn').removeClass("d-none");
+                    clearInterval(new_interval);
                 }
             }
             $("#new-current").html(tr_list);
