@@ -109,7 +109,7 @@ def parser(html_str, court_name, headers):
                     a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
                     pdf_url = escape_string(base_url + "/" + a_formatted)
 
-        if select_count_query(str(court_name), str(case_id), 'judgment_date', judgment_date):
+        if select_count_query(str(court_name), str(case_id), 'judgment_date', judgment_date) and case_id is not None:
             pdf_filename = escape_string(slugify(case_id + '-' + judgment_date)) + '.pdf'
             text_filename = escape_string(slugify(case_id + '-' + judgment_date)) + '.txt'
             pdf_filepath = request_pdf(pdf_url, headers, pdf_filename, court_name, case_id)
@@ -239,3 +239,6 @@ def main(court_name):
         'Cache-Control': "no-cache",
     }
     return request_data(court_name, headers)
+
+
+main('punjab_haryana')
