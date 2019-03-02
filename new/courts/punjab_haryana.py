@@ -199,7 +199,7 @@ def request_data(court_name, headers):
 
                 if "no case found" in response.lower():
                     update_query("UPDATE tracker SET no_nodata=no_nodata+1 WHERE court_name=%s", (court_name))
-                    sleep(5)
+                    sleep(2)
                     break
                 else:
                     parser(response, court_name, headers)
