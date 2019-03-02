@@ -104,9 +104,10 @@ def parser(html_str, court_name, headers):
             elif i == 4:
                 judgment_date = escape_string(str(td.decode_contents()))
             elif i == 5:
-                a_link = BeautifulSoup(str(td), "html.parser").a.get('onclick')
-                a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
-                pdf_url = escape_string(base_url + "/" + a_formatted)
+                if str(td.decode_contents()).lower() != 'file not available':
+                    a_link = BeautifulSoup(str(td), "html.parser").a.get('onclick')
+                    a_formatted = str(str(a_link).replace("window.open('", "")).replace("')", "")
+                    pdf_url = escape_string(base_url + "/" + a_formatted)
 
         if select_count_query(str(court_name), str(case_id), 'judgment_date', judgment_date):
             pdf_filename = escape_string(slugify(case_id + '-' + judgment_date)) + '.pdf'
