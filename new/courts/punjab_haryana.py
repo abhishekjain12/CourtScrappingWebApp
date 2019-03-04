@@ -67,7 +67,7 @@ def parser(html_str, court_name, headers):
     tr_list = table_soup.find_all('tr')
 
     update_query("UPDATE tracker SET total_cases=%s, inserted_cases=0, no_pdf=0, no_text=0, transferred_pdf=0,"
-                 "transferred_text=0 WHERE court_name=%s", (str(len(tr_list - 3)), court_name))
+                 "transferred_text=0 WHERE court_name=%s", (str(len(tr_list) - 3), court_name))
 
     tr_count = 0
     for tr in tr_list:
