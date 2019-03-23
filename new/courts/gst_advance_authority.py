@@ -157,6 +157,8 @@ def parser(court_name, page_no, response):
                 else:
                     text_filepath = None
                     pdf_text_data = None
+                    pdf_filename = None
+                    text_filename = None
 
                 if insert_query("INSERT INTO gst_advance_authority (s_no, state_ut, name_of_applicant, questions, "
                                 "case_id, date, category_as_per_sgst_act, pdf_url, pdf_filename, text_filename) "

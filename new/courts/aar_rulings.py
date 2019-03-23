@@ -129,6 +129,8 @@ def parser(court_name, page_no, response):
                     else:
                         text_filepath = None
                         pdf_text_data = None
+                        pdf_filename = None
+                        text_filename = None
 
                     if insert_query("INSERT INTO aar_rulings (sl_no, case_id, date, country, "
                                     "itr_taxman_ctr, pdf_url, pdf_filename, text_filename) "

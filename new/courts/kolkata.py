@@ -85,14 +85,17 @@ def parser(base_url, court_name, bench_id, response):
                     pdf_filename) + '.txt'
                 fw = open(text_filepath, "w")
                 fw.write(pdf_text_data)
+                text_filename = jud_pdf_name.replace('.pdf', '.txt')
             else:
                 text_filepath = None
                 pdf_text_data = None
+                text_filename = None
+                jud_pdf_name = None
 
             if insert_query(
                     "INSERT INTO kolkata (case_id, judgment_date, pdf_url, pdf_filename, text_filename, case_type, "
                     "case_no, case_year, bench) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                    (case_id, jud_dt, pdf_url, jud_pdf_name, jud_pdf_name.replace('.pdf', '.txt'), case_type, case_no,
+                    (case_id, jud_dt, pdf_url, jud_pdf_name, text_filename, case_type, case_no,
                      case_yr, bench_id)):
 
                 update_query("UPDATE tracker SET inserted_cases=inserted_cases+1 WHERE court_name=%s and bench=%s",

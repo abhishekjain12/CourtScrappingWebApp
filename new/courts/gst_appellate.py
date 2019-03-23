@@ -126,6 +126,8 @@ def parser(base_url, court_name, response):
             else:
                 text_filepath = None
                 pdf_text_data = None
+                pdf_filename = None
+                text_filename = None
 
             if aar_order_no is not None:
                 aar_pdf_filename = slugify('aar-' + aar_order_no + aar_order_date) + '.pdf'

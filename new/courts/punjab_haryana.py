@@ -122,6 +122,8 @@ def parser(html_str, court_name, headers):
             else:
                 text_filepath = None
                 pdf_text_data = None
+                pdf_filename = None
+                text_filename = None
 
             if insert_query(
                     "INSERT INTO punjab_haryana (case_id, judgment_date, petitioner, respondent, pdf_url, "
