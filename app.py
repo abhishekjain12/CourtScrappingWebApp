@@ -255,7 +255,7 @@ def new_start_scrap():
 
 @app.route('/new/current-scrap/<string:court_name>/<string:bench>')
 def new_current_scrap(court_name, bench):
-    if str(bench).lower() == 'none':
+    if str(bench).lower() == 'none' or str(bench).lower() == 'null':
         return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE court_name=%s", (court_name)))
     else:
         return jsonify(new_db.select_one_query("SELECT * FROM tracker WHERE court_name=%s and bench=%s",
@@ -269,7 +269,7 @@ def new_running_scrap():
 
 @app.route('/new/cancel-scrap/<string:court_name>/<string:bench>')
 def new_cancel_scrap(court_name, bench):
-    if str(bench).lower() == 'none':
+    if str(bench).lower() == 'none' or str(bench).lower() == 'null':
         return jsonify(new_db.update_query("UPDATE tracker SET status='IN_ABORT', emergency_exit=true "
                                            "WHERE court_name=%s", (court_name)))
     else:
