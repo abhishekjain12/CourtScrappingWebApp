@@ -120,9 +120,9 @@ def parser(court_name, bench_id, response):
 
             if insert_query(
                     "INSERT INTO national_company_law_appellate_tribunal (case_id, judgment_date, party, section, "
-                    "court_name, order_passed_by, pdf_url, pdf_filename, text_filename) VALUES (%s, %s, %s, %s, %s, "
-                    "%s, %s, %s, %s)", (case_id, judgment_date, party, section, court_name_, order_passed_by, pdf_url,
-                                        pdf_filename, text_filename)):
+                    "court_name, order_passed_by, pdf_url, pdf_filename, text_filename, bench) VALUES (%s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s, %s)", (case_id, judgment_date, party, section, court_name_, order_passed_by,
+                                                pdf_url, pdf_filename, text_filename, bench_id)):
 
                 update_query("UPDATE tracker SET inserted_cases=inserted_cases+1 WHERE court_name=%s AND bench=%s",
                              (court_name, bench_id))
