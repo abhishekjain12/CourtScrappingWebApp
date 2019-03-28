@@ -43,5 +43,27 @@ metadata = [
         'file_name': "punjab_haryana",
         'bench': None,
     },
+    {
+        'court_name': "national_company_law_appellate_tribunal",
+        'file_name': "national_company_law_appellate_tribunal",
+        'bench': [
+            {
+                'id': 'Chairperson+Court',
+                'name': 'Chairperson Court'
+            },
+            {
+                'id': 'Court+-+2',
+                'name': 'Court - 2'
+            },
+            {
+                'id': 'Court+-+3',
+                'name': 'Court - 3'
+            },
+            {
+                'id': 'Registrar+Court',
+                'name': 'Registrar Court'
+            }
+        ],
+    },
 
 ]
