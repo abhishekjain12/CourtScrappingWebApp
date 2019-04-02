@@ -22,6 +22,7 @@ def court_controller(court_name, bench):
 
         if str(code_file) == 'national_company_law_appellate_tribunal':
             if bench_list is not None:
+                bench = str(bench).replace(" ", "+")
                 for bench_ in bench_list:
                     if bench_['id'] == bench:
                         return national_company_law_appellate_tribunal.main(court_name, bench)
