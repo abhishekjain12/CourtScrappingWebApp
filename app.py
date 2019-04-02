@@ -230,6 +230,7 @@ def new_start_scrap():
                             "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
                             "transferred_text=0 WHERE court_name=%s", (court_name))
     else:
+        bench = str(bench).replace(' ', '+')
         new_db.update_query("UPDATE tracker SET status='IN_RUNNING', emergency_exit=false, no_alerts=0, no_tries=0,"
                             "total_cases=0, inserted_cases=0, no_nodata=0, no_pdf=0, no_text=0, transferred_pdf=0,"
                             "transferred_text=0 WHERE court_name=%s and bench=%s", (court_name, bench))
