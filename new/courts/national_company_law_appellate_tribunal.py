@@ -197,7 +197,7 @@ def request_data(base_url, headers, court_name, bench_id):
 
                 payload = "from_date=" + start_date + \
                           "&to_date=" + start_date + \
-                          "&court=" + bench_id + \
+                          "&court=" + str(bench_id).replace(" ", "+") + \
                           "&fifth=fifth"
 
                 response = requests.request("POST", base_url, data=payload, params=querystring, headers=headers,
