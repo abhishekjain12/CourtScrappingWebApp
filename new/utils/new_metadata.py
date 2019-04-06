@@ -65,5 +65,35 @@ metadata = [
             }
         ],
     },
+    {
+        'court_name': "competition_appellate_tribunal",
+        'file_name': "competition_appellate_tribunal",
+        'bench': [
+            {
+                'id': '98',
+                'name': '98 - Section 26(1)'
+            },
+            {
+                'id': '99',
+                'name': '99 - Section 26(2)'
+            },
+            {
+                'id': '100',
+                'name': '100 - Section 26(6)'
+            },
+            {
+                'id': '101',
+                'name': '101 - Section 26(7)'
+            },
+            {
+                'id': '102',
+                'name': '102 - Section 27'
+            },
+            {
+                'id': '103',
+                'name': '103 - Other Orders'
+            }
+        ],
+    },
 
 ]

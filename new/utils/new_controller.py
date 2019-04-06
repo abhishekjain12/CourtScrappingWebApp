@@ -1,5 +1,5 @@
 from new.courts import kolkata, gst_appellate, gst_advance_authority, chhattisgarh, punjab_haryana, aar_rulings, \
-    national_company_law_appellate_tribunal
+    national_company_law_appellate_tribunal, competition_appellate_tribunal
 
 from new.utils.new_metadata import metadata
 
@@ -19,6 +19,12 @@ def court_controller(court_name, bench):
                 for bench_ in bench_list:
                     if bench_['id'] == bench:
                         return kolkata.main(court_name, bench)
+
+        if str(code_file) == 'competition_appellate_tribunal':
+            if bench_list is not None:
+                for bench_ in bench_list:
+                    if bench_['id'] == bench:
+                        return competition_appellate_tribunal.main(court_name, bench)
 
         if str(code_file) == 'national_company_law_appellate_tribunal':
             if bench_list is not None:
