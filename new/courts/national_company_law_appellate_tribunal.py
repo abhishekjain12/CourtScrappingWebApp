@@ -246,11 +246,9 @@ def request_data(base_url, headers, court_name, bench_id):
 def main(court_name, bench):
     logs.initialize_logger("national_company_law_appellate_tribunal")
     base_url = "https://nclat.nic.in/"
-    r = requests.request('GET', base_url, proxies=proxy_dict)
 
     headers = {
         'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
-        'Cookie': 'PHPSESSID=' + str(requests.utils.dict_from_cookiejar(r.cookies)['PHPSESSID']),
         'Cache-Control': "no-cache",
     }
     return request_data(base_url, headers, court_name, bench)
